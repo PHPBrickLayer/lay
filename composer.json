@@ -1,5 +1,5 @@
 {
-    "name": "phpbricklayer/lay",
+    "name": "bricklayer/lay",
     "description": "A lite PHP builder meta-framework to get your projects up and running quickly",
     "keywords": ["framework", "lay", "lite framework", "lite php framework", "metaframework", "fast php framework"],
     "type": "library",
