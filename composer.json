@@ -6,7 +6,7 @@
     "license": "GPL-3.0",
     "autoload": {
         "psr-4": {
-            "Phpbricklayer\\Lay\\": "src/"
+            "BrickLayer\\Lay\\": "src/"
         }
     },
     "authors": [
