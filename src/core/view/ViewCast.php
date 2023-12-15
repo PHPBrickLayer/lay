@@ -53,7 +53,7 @@ abstract class ViewCast
         $this->builder->route($this->builder::DEFAULT_ROUTE)->bind(function (ViewBuilder $builder, array $init_values) {
             $builder
                 ->page("title", $builder->request('route') . " - Page not found")
-                ->body_tag("defult-home")
+                ->body_attr("defult-home")
                 ->local("current_page", "error")
                 ->local("section", "error")
                 ->body(function (array $meta) { ?>

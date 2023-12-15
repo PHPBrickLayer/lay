@@ -20,7 +20,7 @@ class DefaultViews extends ViewCast
 
         $this->builder->init_start()
             ->page('type', 'front')
-            ->body_tag("dark")
+            ->body_attr("dark")
             ->local("section", "app")
             ->local("others", $this->site_data->others)
             ->local("img", $this->client->front->img)
@@ -52,7 +52,7 @@ class DefaultViews extends ViewCast
     {
         $this->builder->route($this->builder::DEFAULT_ROUTE)->bind(function (ViewBuilder $builder){
             $builder->page('title', $this->builder->request('route') . " - Page not Found")
-                ->body_tag("defult-home")
+                ->body_attr("defult-home")
                 ->local("current_page", "error")
                 ->local("section", "error")
                 ->body('error');

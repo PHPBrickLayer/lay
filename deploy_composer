@@ -2,7 +2,7 @@
 <?php
 require_once __DIR__ . DIRECTORY_SEPARATOR . "AutoLoader.php";
 
-$server = \BrickLayer\Lay\core\LayConfig::res_server();
+$server = \BrickLayer\Lay\core\LayConfig::server_data();
 $root = $server->root;
 $temp = $server->temp;
 $command = file_exists($root . "composer.lock") ? "update" : "install";

@@ -102,7 +102,7 @@ class Exception
             DEBUG;
             return $other['act'] ?? "kill";
         } else {
-            $dir = LayConfig::res_server()->temp;
+            $dir = LayConfig::server_data()->temp;
             $file_log = $dir . DIRECTORY_SEPARATOR . "exceptions.log";
 
             if (!is_dir($dir)) {

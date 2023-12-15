@@ -77,7 +77,7 @@ if(@$opts['help']) {
     );
 }
 
-$fs = LayConfig::res_server();
+$fs = LayConfig::server_data();
 $s = DIRECTORY_SEPARATOR;
 $force = $opts['force_action'] ?? false;
 

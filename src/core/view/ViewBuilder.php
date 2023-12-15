@@ -68,7 +68,7 @@ final class ViewBuilder
                 return $this;
             }
 
-            self::$route_container[self::route_storage_key][self::view_constants][$section]->{$key} = $value;
+            self::$route_container[self::route_storage_key][self::view_constants][$section][$key] = $value;
             return $this;
         }
 
@@ -80,7 +80,7 @@ final class ViewBuilder
             return $this;
         }
 
-        self::$route_container[self::route_storage_key][self::$route][$section]->{$key} = $value;
+        self::$route_container[self::route_storage_key][self::$route][$section][$key] = $value;
         return $this;
     }
 
@@ -126,7 +126,7 @@ final class ViewBuilder
     {
         // Cache default page
         if (self::$route == self::DEFAULT_ROUTE)
-            $handler($this, $this->get_constants());
+            $handler($this);
 
         if (self::$view_found)
             return $this;
@@ -144,7 +144,7 @@ final class ViewBuilder
             if ($route == self::DEFAULT_ROUTE)
                 return $this;
 
-            $handler($this, $this->get_constants(), self::$route, self::$route_aliases);
+            $handler($this, self::$route, self::$route_aliases);
             $current_page = $this->get_route_details($route) ?? [];
 
             self::$view_found = true;
@@ -156,9 +156,9 @@ final class ViewBuilder
         return $this;
     }
 
-    private function get_constants(): array
+    public function constants(): object
     {
-        return $this->get_route_details(self::view_constants) ?? [];
+        return (object) $this->get_route_details(self::view_constants);
     }
 
     private function bind_uri(): string
@@ -245,7 +245,7 @@ final class ViewBuilder
     {
         self::$invoking = true;
 
-        $handler($this, $this->get_constants(), self::$route, self::$route_aliases);
+        $handler($this, self::$route, self::$route_aliases);
 
         if ($kill_on_done)
             die;
@@ -271,34 +271,29 @@ final class ViewBuilder
         return $this->store_page_data(ViewEngine::key_page, $key, $value);
     }
 
-    public function body_tag(?string $class = null, ?string $attribute = null): self
+    public function body_attr(?string $class = null, ?string $attribute = null): self
     {
-        return $this->store_page_data(ViewEngine::key_body, value: ["class" => $class, "attr" => $attribute]);
+        return $this->store_page_data(ViewEngine::key_body_attr, value: ["class" => $class, "attr" => $attribute]);
     }
 
     public function head(string|Closure $file_or_func): self
     {
-        return $this->store_page_data(ViewEngine::key_view, 'head', $file_or_func);
+        return $this->store_page_data(ViewEngine::key_head, value: $file_or_func);
     }
 
     public function body(string|Closure $file_or_func): self
     {
-        return $this->store_page_data(ViewEngine::key_view, 'body', $file_or_func);
+        return $this->store_page_data(ViewEngine::key_body, value:  $file_or_func);
     }
 
     public function script(string|Closure $file_or_func): self
     {
-        return $this->store_page_data(ViewEngine::key_view, 'script', $file_or_func);
+        return $this->store_page_data(ViewEngine::key_script, value:  $file_or_func);
     }
 
     public function assets(string|array ...$assets): self
     {
         return $this->store_page_data(ViewEngine::key_assets, value: $assets);
-    }
-
-    public function local_array(string $key, mixed $value): self
-    {
-        return $this->store_page_data(ViewEngine::key_local_array, $key, $value);
     }
 
 }

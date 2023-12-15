@@ -9,7 +9,6 @@ use BrickLayer\Lay\core\LayConfig;
 use BrickLayer\Lay\core\traits\IsSingleton;
 use BrickLayer\Lay\core\view\tags\Link;
 use BrickLayer\Lay\core\view\tags\Script;
-use Opis\Closure\SerializableClosure;
 
 /**
  * Page Creator
@@ -20,42 +19,42 @@ final class ViewEngine {
 
     const key_core = "core";
     const key_page = "page";
+    const key_body_attr = "body_attr";
     const key_body = "body";
-    const key_view = "view";
+    const key_head = "head";
+    const key_script = "script";
     const key_assets = "assets";
     const key_local = "local";
-    const key_local_array = "local_array";
 
     private static array $constant_attributes = [];
-    private static array $meta_data = [];
+    private static array $assets = [];
+    private static object $meta_data;
 
-    public static function constants(array $meta) : void {
-        $const = array_replace_recursive(self::$constant_attributes, $meta);
-
-        $route = Domain::current_route_data("route");
-        $url = LayConfig::site_data()->base . $route;
+    public static function constants(array $const) : void {
+        $route = ViewBuilder::new()->request('route');
+        $url = DomainResource::get()->domain->domain_uri . ($route == "index" ? "" : $route);
 
         self::$constant_attributes = [
-            self::key_core => (object) [
-                "close_connection" => $const[self::key_core]->close_connection ?? true,
-                "use_lay_script" => $const[self::key_core]->use_lay_script ?? true,
-                "skeleton" => $const[self::key_core]->skeleton ?? true,
-                "append_site_name" => $const[self::key_core]->append_site_name ?? true,
+            self::key_core => [
+                "close_connection" => $const[self::key_core]['close_connection'] ?? true,
+                "use_lay_script" => $const[self::key_core]['use_lay_script'] ?? true,
+                "skeleton" => $const[self::key_core]['skeleton'] ?? true,
+                "append_site_name" => $const[self::key_core]['append_site_name'] ?? true,
             ],
-            self::key_page => (object) [
-                "charset" =>  $const[self::key_page]->charset ?? "UTF-8",
-                "base" =>  $const[self::key_page]->base ?? null,
-                "route" => $const[self::key_page]->route ?? $route,
-                "url" => $const[self::key_page]->url ?? $url,
-                "canonical" => $const[self::key_page]->canonical ?? $url,
-                "title" => $const[self::key_page]->title ?? "Untitled Page",
-                "desc" => $const[self::key_page]->desc ?? "",
-                "img" => $const[self::key_page]->img ?? null,
-                "author" => $const[self::key_page]->author ?? null,
+            self::key_page => [
+                "charset" =>  $const[self::key_page]['charset'] ?? "UTF-8",
+                "base" =>  $const[self::key_page]['base'] ?? null,
+                "route" => $const[self::key_page]['route'] ?? $route,
+                "url" => $const[self::key_page]['url'] ?? $url,
+                "canonical" => $const[self::key_page]['canonical'] ?? $url,
+                "title" => $const[self::key_page]['title'] ?? "Untitled Page",
+                "desc" => $const[self::key_page]['desc'] ?? "",
+                "img" => $const[self::key_page]['img'] ?? null,
+                "author" => $const[self::key_page]['author'] ?? null,
             ],
-            self::key_body =>  (object) [
-                "class" =>  $const[self::key_body]->class ?? null,
-                "attr" =>   $const[self::key_body]->attr ?? null,
+            self::key_body_attr =>  [
+                "class" =>  $const[self::key_body_attr]['class'] ?? null,
+                "attr" =>   $const[self::key_body_attr]['attr'] ?? null,
             ],
             /**
              * `view` is an array that accepts three [optional] keys for each section of the html page,
@@ -76,11 +75,9 @@ final class ViewEngine {
              *     of `$meta[self::key_page]['type']`.
              *    @example: 'head' => 'header', 'body' => 'homepage',
              **/
-            self::key_view => (object) [
-                "head" => $const[self::key_view]->head ?? null,
-                "body" => $const[self::key_view]->body ?? null,
-                "script" => $const[self::key_view]->script ?? null,
-            ],
+            self::key_head => $const[self::key_head] ?? null,
+            self::key_body => $const[self::key_body] ?? null,
+            self::key_script => $const[self::key_script] ?? null,
             /**
              * `assets` searches for assets based on the `ARRAY_KEY`/`DIRECTORY_NAME`
              * @example "assets" => [ "@shared_js/contact-us.js", "@css/style.css" ].
@@ -89,7 +86,6 @@ final class ViewEngine {
              **/
             self::key_assets => $const[self::key_assets] ?? [],
             self::key_local => $const[self::key_local] ?? [],
-            self::key_local_array => $const[self::key_local_array] ?? [],
         ];
     }
 
@@ -99,6 +95,7 @@ final class ViewEngine {
 
         $layConfig = LayConfig::new();
         $data = $layConfig::site_data();
+
 
         $const = array_replace_recursive(self::$constant_attributes, $page_data);;
 
@@ -114,15 +111,10 @@ final class ViewEngine {
                 $const[self::key_page]['title_raw'] . " :: " . $data->name->short;
         }
 
-        // Pass the variables required by include files from this scope to their scope.
-        // This affects all files included within this same scope.
-        $layConfig::set_inc_vars([
-            "META" => $const,
-            "LOCAL" => $const[self::key_local],
-            "LOCAL_ARRAY" => $const[self::key_local_array],
-        ]);
+        self::$assets = $const[self::key_assets];
+        unset($const[self::key_assets]);
 
-        self::$meta_data = $const;
+        self::$meta_data = LayObject::new()->to_object($const);
         $this->create_html_page();
     }
 
@@ -132,21 +124,22 @@ final class ViewEngine {
         $layConfig = LayConfig::instance();
         $site_data = $layConfig::site_data();
         $client = DomainResource::get();
-        $page = $meta[self::key_page];
+        $page = $meta->{self::key_page};
 
         $lay_api = $site_data->global_api ?? $site_data->domain . "api/";
-        $img = ViewSrc::gen($page['img'] ?? $client->shared->img_default->meta ?? $client->shared->img_default->logo);
+        $img = ViewSrc::gen($page->img ?? $client->shared->img_default->meta ?? $client->shared->img_default->logo);
         $favicon = ViewSrc::gen($client->shared->img_default->favicon);
-        $author = $page['author'] ?? $site_data->author;
-        $title = $page['title'];
-        $title_raw = $page['title_raw'];
-        $base = $page['base'] ?? $client->domain->domain_uri;
-        $charset = $page['charset'];
-        $desc = $page['desc'];
+        $author = $page->author ?? $site_data->author;
+        $title = $page->title;
+        $title_raw = $page->title_raw;
+        $base = $page->base ?? $client->domain->domain_uri;
+        $charset = $page->charset;
+        $desc = $page->desc;
         $color = $site_data->color->pry;
         $canonical = <<<LINK
-            <link rel="canonical" href="{$page['canonical']}" />
+            <link rel="canonical" href="$page->canonical" />
         LINK;
+        $body_attr = $meta->{self::key_body_attr};
 
         $page = <<<STR
         <!DOCTYPE html>
@@ -166,24 +159,24 @@ final class ViewEngine {
             <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
             <!-- Framework Tags-->
             <meta property="lay:site_name_short" id="LAY-SITE-NAME-SHORT" content="{$site_data->name->short}">
-            <meta property="lay:url" id="LAY-PAGE-URL" content="{$page['route']}">
+            <meta property="lay:url" id="LAY-PAGE-URL" content="$page->route">
             <!-- // Framework Tags-->
             <meta property="og:title" id="LAY-PAGE-TITLE" content="$title_raw">
-            <meta property="og:url" id="LAY-PAGE-FULL-URL" content="{$page['url']}">
+            <meta property="og:url" id="LAY-PAGE-FULL-URL" content="$page->url">
             <meta property="og:type" content="website">
             <meta property="og:site_name" id="LAY-SITE-NAME" content="{$site_data->name->full}">
-            <meta property="og:description" content="{$page['desc']}">
+            <meta property="og:description" content="$desc">
             <meta property="og:image" content="$img">
             <meta itemprop="name" content="$title">
-            <meta itemprop="description" content="{$page['desc']}">
-            <meta itemprop="image" id="LAY-PAGE-IMG" content="{$img}">
+            <meta itemprop="description" content="$desc">
+            <meta itemprop="image" id="LAY-PAGE-IMG" content="$img">
             <link rel="icon" type="image/x-icon" href="$favicon">
             <link rel="shortcut icon" href="{$base}favicon.ico">
             <link rel="apple-touch-icon" href="$favicon" />
             $canonical
             {$this->skeleton_head()}
         </head>
-        <body class="{$meta[self::key_body]['class']}" {$meta[self::key_body]['attr']}>
+        <body class="$body_attr->class" $body_attr->attr>
             <!--//START LAY CONSTANTS-->
             <input type="hidden" id="LAY-API" value="$lay_api">
             <input type="hidden" id="LAY-UPLOAD" value="$client->upload">
@@ -193,7 +186,6 @@ final class ViewEngine {
             <input type="hidden" id="LAY-DOMAIN-ROOT" value="$client->root">
             <!--//END LAY CONSTANTS-->
             {$this->skeleton_body()}
-            {$this->skeleton_script()}
         </body></html>
         STR;
         
@@ -203,71 +195,35 @@ final class ViewEngine {
         echo $page;
     }
 
-    # <Head> values that belong inside the <head> tag
-    private function skeleton_head() : string {
-        $meta = self::$meta_data;
+    private function skeleton_head() : string
+    {
+        ob_start();
 
-        $css_template = function(string $href, array $attributes = []) : string {
-            $rel = $attributes['rel'] ?? "stylesheet";
-            $lazy_load = $attributes['lazy'] ?? false;
+        $this->add_view_section(self::key_head);
+        $this->dump_assets("css");
 
-            if(isset($attributes['rel']))
-                unset($attributes['rel']);
-
-            if(isset($attributes['href']))
-                unset($attributes['href']);
-
-            if($lazy_load)
-                unset($attributes['lazy']);
-
-            $link = Link::new();
-
-            foreach ($attributes as $i => $a) {
-                $link->attr($i, $a);
-            }
-
-            return $link->rel($rel)->href($href, false, $lazy_load);
-        };
-
-        $view = $this->view_handler('head');
-
-        $this->prepare_assets($css_template, $meta[self::key_assets], $view, "css");
-
-        return $view;
+        return ob_get_clean();
     }
 
-    # <Body> including <Header> or Top Half of <Body>
     private function skeleton_body() : string
     {
-        return $this->view_handler('body');
+        ob_start();
+
+        $this->add_view_section(self::key_body);
+        $this->add_view_section(self::key_script);
+
+        $this->dump_assets("js");
+
+        if(self::$meta_data->{self::key_core}->close_connection)
+            LayConfig::new()->close_sql();
+
+        return ob_get_clean();
     }
 
-    # <Script> Bottom Half of <Body>
-    private function skeleton_script() : string {
+    private function add_view_section(string $view_section) : void
+    {
         $meta = self::$meta_data;
-
-        $layConfig = LayConfig::instance();
-        $core_script = $this->core_script();
-
-        $view = $this->view_handler('script');
-
-        $this->prepare_assets(
-            fn ($src, $attr = []) => $this->script_tag_template($src, $attr),
-            $meta[self::key_assets], $view,
-            "js"
-        );
-
-        if($meta[self::key_core]['close_connection'])
-            $layConfig->close_sql();
-
-        return $core_script . $view;
-    }
-
-    # This uses the parameters passed from the page array to handle the view either as Closure or by inclusion
-    private function view_handler(string $view_section) : string {
-        $meta = self::$meta_data;
-        $meta_view = $meta[self::key_view][$view_section];
-        $layConfig = LayConfig::new();
+        $meta_view = $meta->{$view_section};
 
         // Accept the type of unique view type from the current page and store it in the `$meta_view` variable.
         // This could be a view file, which will simply be the filename without its file extension (.view).
@@ -277,33 +233,49 @@ final class ViewEngine {
         if($meta_view instanceof Closure)
             echo $meta_view($meta);
 
-        elseif($meta_view instanceof SerializableClosure) {
-            $meta_view = $meta_view->getClosure();
-            echo $meta_view($meta);
-        }
-
         elseif($meta_view)
-            $layConfig->inc_file(explode(".view", $meta_view)[0], "view");
+            echo $this->insert_view(explode(".view", $meta_view)[0], "view", true);
 
-        $meta_view = ob_get_clean();
+        self::$meta_data->{$view_section} = ob_get_clean();
 
         // This includes the `inc file` related to the section.
         // That is: body.inc for `body section`, head.inc for `head section`.
-        if($meta[self::key_core]['skeleton'] === true)
-            return $layConfig->inc_file($view_section, "inc", vars: [
-                "INCLUDE_AS_STRING" => true,
-                "META" => [
-                    self::key_view => [
-                        $view_section => $meta_view
-                    ]
-                ]
-            ]);
-
-        return $meta_view;
+        if($meta->{self::key_core}->skeleton === true)
+            $this->insert_view($view_section, "inc", false);
     }
 
-    private function prepare_assets(\Closure $asset_template, array &$assets, string &$view, string $asset_type) : void {
-        $resolve_asset = function (string|array &$asset, string|int $assets_key, array &$assets_array) use ($asset_type, $asset_template, &$resolve_asset) : string {
+    private function insert_view(?string $file, string $type, bool $as_string) : ?string
+    {
+        $domain = DomainResource::get()->domain;
+        $inc_root = $domain->layout;
+        $view_root = $domain->plaster;
+        $root = $type == "inc" ? $inc_root : $view_root;
+        $type = "." . $type;
+
+        $file = $root . $file . $type;
+
+        DomainResource::make_plaster(self::$meta_data);
+
+        if(!file_exists($file))
+            Exception::throw_exception("execution Failed trying to include file ($file)","FileNotFound");
+
+        if($as_string) {
+            ob_start();
+            include_once $file;
+            return ob_get_clean();
+        }
+
+        include_once $file;
+        return null;
+    }
+
+    private function dump_assets(string $asset_type) : void
+    {
+        $resolve_asset = function (string|array &$asset, string|int $assets_key) use ($asset_type) : string {
+            $asset_template = $asset_type == "js" ?
+                fn ($src, $attr = []) => $this->script_tag_template($src, $attr):
+                fn ($href, $attr = []) => $this->link_tag_template($href, $attr);
+
             // If the asset item found is not the asset type indicated.
             // That is: if Painter is looking for `js` file, and it sees css, it should return an empty string.
             if(is_string($asset) && !str_ends_with($asset,".$asset_type"))
@@ -318,7 +290,7 @@ final class ViewEngine {
 
                     // cleanup the array after adding the asset
                     if(is_int($assets_key))
-                        unset($assets_array[$assets_key]);
+                        unset(self::$assets[$assets_key]);
 
                     if(empty($asset['src']))
                         return "";
@@ -334,14 +306,44 @@ final class ViewEngine {
 
             // cleanup the array after adding the asset
             if(is_int($assets_key))
-                unset($assets_array[$assets_key]);
+                unset(self::$assets[$assets_key]);
 
             return $asset_template($asset);
         };
 
-        foreach ($assets as $k => $asset) {
-            $view .= $resolve_asset($asset, $k, $assets);
+        $view = "";
+
+        foreach (self::$assets as $k => $asset) {
+            $view .= $resolve_asset($asset, $k);
         }
+
+        if($asset_type == "js")
+            $view = $this->core_script() . $view;
+
+        echo $view;
+    }
+
+    private function link_tag_template(string $href, array $attributes = []) : string
+    {
+        $rel = $attributes['rel'] ?? "stylesheet";
+        $lazy_load = $attributes['lazy'] ?? false;
+
+        if(isset($attributes['rel']))
+            unset($attributes['rel']);
+
+        if(isset($attributes['href']))
+            unset($attributes['href']);
+
+        if($lazy_load)
+            unset($attributes['lazy']);
+
+        $link = Link::new();
+
+        foreach ($attributes as $i => $a) {
+            $link->attr($i, $a);
+        }
+
+        return $link->rel($rel)->href($href, false, $lazy_load);
     }
 
     private function script_tag_template(string $src, array $attributes = []) : string
@@ -369,57 +371,27 @@ final class ViewEngine {
         $js_template = fn ($src, $attr = []) => $this->script_tag_template($src, $attr);
         $core_script = "";
 
-        if($meta[self::key_core]['script']) {
-            $s = DIRECTORY_SEPARATOR;
-            $domain = DomainResource::get();
-            $lay_base = $domain->lay->uri;
-            $lay_root = $domain->lay->root;
+        if(!$meta->{self::key_core}->use_lay_script)
+            return $core_script;
 
-            list($omj,$const) = null;
+        $s = DIRECTORY_SEPARATOR;
+        $domain = DomainResource::get();
+        $lay_base = $domain->lay->uri;
+        $lay_root = $domain->lay->root;
 
-            if ($layConfig::$ENV_IS_PROD) {
-                if (file_exists($lay_root . $s . 'index.min.js'))
-                    $omj = $js_template($lay_base . 'index.min.js', ['defer' => false]);
+        list($omj,$const) = null;
 
-                if (file_exists($lay_root . $s . "constants.min.js"))
-                    $const = $js_template($lay_base . 'constants.min.js', ['defer' => false]);
-            }
+        if ($layConfig::$ENV_IS_PROD) {
+            if (file_exists($lay_root . $s . 'index.min.js'))
+                $omj = $js_template($lay_base . 'index.min.js', ['defer' => false]);
 
-            $core_script .= $omj ?? $js_template($lay_base . 'index.js',['defer' => false]);
-            $core_script .= $const ?? $js_template($lay_base . 'constants.js', ['defer' => false]);
+            if (file_exists($lay_root . $s . "constants.min.js"))
+                $const = $js_template($lay_base . 'constants.min.js', ['defer' => false]);
         }
 
+        $core_script .= $omj ?? $js_template($lay_base . 'index.js',['defer' => false]);
+        $core_script .= $const ?? $js_template($lay_base . 'constants.js', ['defer' => false]);
+
         return $core_script;
-    }
-
-    public function inc_file(?string $file, string $type = "inc") : ?string
-    {
-        $slash = DIRECTORY_SEPARATOR;
-
-        $domain = DomainResource::get()->domain;
-        $inc_root = $domain->layout;
-        $view_root = $domain->plaster;
-        $root = $type == "inc" ? $inc_root : $view_root;
-        $type = "." . $type;
-
-        $file = $root . $file . $type;
-
-        $meta = $var['META'] ?? [];
-        $local = $var['LOCAL'] ?? [];
-        $local_array = $var['LOCAL_ARRAY'] ?? [];
-
-        $meta = $obj->to_object($meta);
-        $local = $obj->to_object($local);
-
-        if(!file_exists($file))
-            Exception::throw_exception("execution Failed trying to include file ($file)","FileNotFound");
-
-        if(isset($vars['INCLUDE_AS_STRING']) && $vars['INCLUDE_AS_STRING'])
-            return $this->inc_file_as_string($file, $meta, $local, $local_array);
-
-        $layConfig = $this;
-
-        $once ? include_once $file : include $file;
-        return null;
     }
 }

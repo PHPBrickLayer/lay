@@ -118,7 +118,7 @@ final class LayCron {
     private function make_job(string $job) : string {
         $this->db_data_init();
 
-        $server = LayConfig::res_server();
+        $server = LayConfig::server_data();
 
         $schedule = $this->minute . " " . $this->hour . " " . $this->day_of_the_month . " " . $this->month . " " . $this->day_of_the_week;
 
