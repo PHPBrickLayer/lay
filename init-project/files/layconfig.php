@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
-
-require_once __DIR__ . DIRECTORY_SEPARATOR . "Lay" . DIRECTORY_SEPARATOR . "AutoLoader.php";
 
 use BrickLayer\Lay\core\LayConfig;
+
+include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bricklayer" . DIRECTORY_SEPARATOR . "lay" . DIRECTORY_SEPARATOR . "Autoloader.php";
 
 LayConfig::validate_lay();
 
@@ -43,12 +42,4 @@ $layConfig
             This is an awesome project that is about to unfold you just watch and see 😉.
         ",
     ])
-    ->init_copyright("&copy; <a href=\"{$layConfig->get_site_data('base')}\">$site_name</a>. " . date("Y") . ". All Rights Reserved")
-    ->init_orm(defined('CONNECT_DB_BY_DEFAULT') && CONNECT_DB_BY_DEFAULT);
-
-// Set a custom location for your static assets from Lays' default to yours.
-// For default locations use:
-// var_dump($layConfig->get_res__client('front'));
-$layConfig::set_res__client("front", "img", "@front/assets/images/");
-$layConfig::set_res__client("front", "css", "@front/assets/css/");
-$layConfig::set_res__client("front", "js", "@front/assets/js/");
+    ->init_orm(false);
