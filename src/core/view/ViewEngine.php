@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace BrickLayer\Lay\core\view;
 
+use BrickLayer\Lay\libs\LayObject;
 use Closure;
 use BrickLayer\Lay\core\Exception;
 use BrickLayer\Lay\core\LayConfig;
@@ -31,30 +32,30 @@ final class ViewEngine {
     public static function constants(array $meta) : void {
         $const = array_replace_recursive(self::$constant_attributes, $meta);
 
-        $route = ViewDomain::current_route_data("route");
+        $route = Domain::current_route_data("route");
         $url = LayConfig::site_data()->base . $route;
 
         self::$constant_attributes = [
-            self::key_core => [
-                "close_connection" => $const[self::key_core]['close_connection'] ?? true,
-                "script" => $const[self::key_core]['script'] ?? true,
-                "skeleton" => $const[self::key_core]['skeleton'] ?? true,
-                "append_site_name" => $const[self::key_core]['append_site_name'] ?? true,
+            self::key_core => (object) [
+                "close_connection" => $const[self::key_core]->close_connection ?? true,
+                "use_lay_script" => $const[self::key_core]->use_lay_script ?? true,
+                "skeleton" => $const[self::key_core]->skeleton ?? true,
+                "append_site_name" => $const[self::key_core]->append_site_name ?? true,
             ],
-            self::key_page => [
-                "charset" =>  $const[self::key_page]['charset'] ?? "UTF-8",
-                "base" =>  $const[self::key_page]['base'] ?? null,
-                "route" => $const[self::key_page]['route'] ?? $route,
-                "url" => $const[self::key_page]['url'] ?? $url,
-                "canonical" => $const[self::key_page]['canonical'] ?? $url,
-                "title" => $const[self::key_page]['title'] ?? "Untitled Page",
-                "desc" => $const[self::key_page]['desc'] ?? "",
-                "img" => $const[self::key_page]['img'] ?? null,
-                "author" => $const[self::key_page]['author'] ?? null,
+            self::key_page => (object) [
+                "charset" =>  $const[self::key_page]->charset ?? "UTF-8",
+                "base" =>  $const[self::key_page]->base ?? null,
+                "route" => $const[self::key_page]->route ?? $route,
+                "url" => $const[self::key_page]->url ?? $url,
+                "canonical" => $const[self::key_page]->canonical ?? $url,
+                "title" => $const[self::key_page]->title ?? "Untitled Page",
+                "desc" => $const[self::key_page]->desc ?? "",
+                "img" => $const[self::key_page]->img ?? null,
+                "author" => $const[self::key_page]->author ?? null,
             ],
-            self::key_body =>  [
-                "class" =>  $const[self::key_body]['class'] ?? null,
-                "attr" =>   $const[self::key_body]['attr'] ?? null,
+            self::key_body =>  (object) [
+                "class" =>  $const[self::key_body]->class ?? null,
+                "attr" =>   $const[self::key_body]->attr ?? null,
             ],
             /**
              * `view` is an array that accepts three [optional] keys for each section of the html page,
@@ -75,16 +76,16 @@ final class ViewEngine {
              *     of `$meta[self::key_page]['type']`.
              *    @example: 'head' => 'header', 'body' => 'homepage',
              **/
-            self::key_view => [
-                "head" => $const[self::key_view]['head'] ?? null,
-                "body" => $const[self::key_view]['body'] ?? null,
-                "script" => $const[self::key_view]['script'] ?? null,
+            self::key_view => (object) [
+                "head" => $const[self::key_view]->head ?? null,
+                "body" => $const[self::key_view]->body ?? null,
+                "script" => $const[self::key_view]->script ?? null,
             ],
             /**
              * `assets` searches for assets based on the `ARRAY_KEY`/`DIRECTORY_NAME`
-             * @example "assets" => [ "@custom/js/front/contact-us.js", "@front/css/style.css" ].
+             * @example "assets" => [ "@shared_js/contact-us.js", "@css/style.css" ].
              * The entries can also be an array:
-             * @example "assets" => [ ["src" => "@custom/js/front/contact-us.js", "async" => true, "type" => "text/javascript"], ]
+             * @example "assets" => [ ["src" => "@shared_js/contact-us.js", "async" => true, "type" => "text/javascript"], ]
              **/
             self::key_assets => $const[self::key_assets] ?? [],
             self::key_local => $const[self::key_local] ?? [],
@@ -130,7 +131,7 @@ final class ViewEngine {
 
         $layConfig = LayConfig::instance();
         $site_data = $layConfig::site_data();
-        $client = ViewDomainResources::get();
+        $client = DomainResource::get();
         $page = $meta[self::key_page];
 
         $lay_api = $site_data->global_api ?? $site_data->domain . "api/";
@@ -202,6 +203,66 @@ final class ViewEngine {
         echo $page;
     }
 
+    # <Head> values that belong inside the <head> tag
+    private function skeleton_head() : string {
+        $meta = self::$meta_data;
+
+        $css_template = function(string $href, array $attributes = []) : string {
+            $rel = $attributes['rel'] ?? "stylesheet";
+            $lazy_load = $attributes['lazy'] ?? false;
+
+            if(isset($attributes['rel']))
+                unset($attributes['rel']);
+
+            if(isset($attributes['href']))
+                unset($attributes['href']);
+
+            if($lazy_load)
+                unset($attributes['lazy']);
+
+            $link = Link::new();
+
+            foreach ($attributes as $i => $a) {
+                $link->attr($i, $a);
+            }
+
+            return $link->rel($rel)->href($href, false, $lazy_load);
+        };
+
+        $view = $this->view_handler('head');
+
+        $this->prepare_assets($css_template, $meta[self::key_assets], $view, "css");
+
+        return $view;
+    }
+
+    # <Body> including <Header> or Top Half of <Body>
+    private function skeleton_body() : string
+    {
+        return $this->view_handler('body');
+    }
+
+    # <Script> Bottom Half of <Body>
+    private function skeleton_script() : string {
+        $meta = self::$meta_data;
+
+        $layConfig = LayConfig::instance();
+        $core_script = $this->core_script();
+
+        $view = $this->view_handler('script');
+
+        $this->prepare_assets(
+            fn ($src, $attr = []) => $this->script_tag_template($src, $attr),
+            $meta[self::key_assets], $view,
+            "js"
+        );
+
+        if($meta[self::key_core]['close_connection'])
+            $layConfig->close_sql();
+
+        return $core_script . $view;
+    }
+
     # This uses the parameters passed from the page array to handle the view either as Closure or by inclusion
     private function view_handler(string $view_section) : string {
         $meta = self::$meta_data;
@@ -239,111 +300,6 @@ final class ViewEngine {
             ]);
 
         return $meta_view;
-    }
-
-    # <Body> including <Header> or Top Half of <Body>
-    private function skeleton_body() : string {
-        return $this->view_handler('body');
-    }
-
-    # <Head> values that belong inside the <head> tag
-    private function skeleton_head() : string {
-        $meta = self::$meta_data;
-
-        $css_template = function(string $href, array $attributes = []) : string {
-            $rel = $attributes['rel'] ?? "stylesheet";
-            $lazy_load = $attributes['lazy'] ?? false;
-
-            if(isset($attributes['rel']))
-                unset($attributes['rel']);
-
-            if(isset($attributes['href']))
-                unset($attributes['href']);
-
-            if($lazy_load)
-                unset($attributes['lazy']);
-
-            $link = Link::new();
-            
-            foreach ($attributes as $i => $a) {
-                $link->attr($i, $a);
-            }
-
-            return $link->rel($rel)->href($href, false, $lazy_load);
-        };
-
-        $view = $this->view_handler('head');
-
-        $this->prepare_assets($css_template, $meta[self::key_assets], $view, "css");
-
-        return $view;
-    }
-
-    private function script_tag_template(string $src, array $attributes = []) : string
-    {
-        $defer = str_replace([1, true], 'true', (string)filter_var($attributes['defer'] ?? true, FILTER_VALIDATE_INT));
-
-        if (isset($attributes['src']))
-            unset($attributes['src']);
-
-        if (isset($attributes['defer']))
-            unset($attributes['defer']);
-
-        $script = Script::new();
-        
-        foreach ($attributes as $i => $a) {
-            $script->attr($i, $a);
-        }
-
-        return $script->defer((bool) $defer)->src($src, false);
-    }
-    private function skeleton_script() : string {
-        $meta = self::$meta_data;
-
-        $layConfig = LayConfig::instance();
-        $core_script = $this->core_script();
-
-        $view = $this->view_handler('script');
-
-        $this->prepare_assets(
-            fn ($src, $attr = []) => $this->script_tag_template($src, $attr),
-            $meta[self::key_assets], $view,
-            "js"
-        );
-
-        if($meta[self::key_core]['close_connection'])
-            $layConfig->close_sql();
-
-        return $core_script . $view;
-    }
-
-    private function core_script() : string {
-        $meta = self::$meta_data;
-        $layConfig = LayConfig::new();
-        $js_template = fn ($src, $attr = []) => $this->script_tag_template($src, $attr);
-        $core_script = "";
-
-        if($meta[self::key_core]['script']) {
-            $s = DIRECTORY_SEPARATOR;
-            $domain = ViewDomainResources::get();
-            $lay_base = $domain->lay->uri;
-            $lay_root = $domain->lay->root;
-
-            list($omj,$const) = null;
-
-            if ($layConfig::$ENV_IS_PROD) {
-                if (file_exists($lay_root . $s . 'index.min.js'))
-                    $omj = $js_template($lay_base . 'index.min.js', ['defer' => false]);
-
-                if (file_exists($lay_root . $s . "constants.min.js"))
-                    $const = $js_template($lay_base . 'constants.min.js', ['defer' => false]);
-            }
-
-            $core_script .= $omj ?? $js_template($lay_base . 'index.js',['defer' => false]);
-            $core_script .= $const ?? $js_template($lay_base . 'constants.js', ['defer' => false]);
-        }
-
-        return $core_script;
     }
 
     private function prepare_assets(\Closure $asset_template, array &$assets, string &$view, string $asset_type) : void {
@@ -386,5 +342,84 @@ final class ViewEngine {
         foreach ($assets as $k => $asset) {
             $view .= $resolve_asset($asset, $k, $assets);
         }
+    }
+
+    private function script_tag_template(string $src, array $attributes = []) : string
+    {
+        $defer = str_replace([1, true], 'true', (string)filter_var($attributes['defer'] ?? true, FILTER_VALIDATE_INT));
+
+        if (isset($attributes['src']))
+            unset($attributes['src']);
+
+        if (isset($attributes['defer']))
+            unset($attributes['defer']);
+
+        $script = Script::new();
+
+        foreach ($attributes as $i => $a) {
+            $script->attr($i, $a);
+        }
+
+        return $script->defer((bool) $defer)->src($src, false);
+    }
+
+    private function core_script() : string {
+        $meta = self::$meta_data;
+        $layConfig = LayConfig::new();
+        $js_template = fn ($src, $attr = []) => $this->script_tag_template($src, $attr);
+        $core_script = "";
+
+        if($meta[self::key_core]['script']) {
+            $s = DIRECTORY_SEPARATOR;
+            $domain = DomainResource::get();
+            $lay_base = $domain->lay->uri;
+            $lay_root = $domain->lay->root;
+
+            list($omj,$const) = null;
+
+            if ($layConfig::$ENV_IS_PROD) {
+                if (file_exists($lay_root . $s . 'index.min.js'))
+                    $omj = $js_template($lay_base . 'index.min.js', ['defer' => false]);
+
+                if (file_exists($lay_root . $s . "constants.min.js"))
+                    $const = $js_template($lay_base . 'constants.min.js', ['defer' => false]);
+            }
+
+            $core_script .= $omj ?? $js_template($lay_base . 'index.js',['defer' => false]);
+            $core_script .= $const ?? $js_template($lay_base . 'constants.js', ['defer' => false]);
+        }
+
+        return $core_script;
+    }
+
+    public function inc_file(?string $file, string $type = "inc") : ?string
+    {
+        $slash = DIRECTORY_SEPARATOR;
+
+        $domain = DomainResource::get()->domain;
+        $inc_root = $domain->layout;
+        $view_root = $domain->plaster;
+        $root = $type == "inc" ? $inc_root : $view_root;
+        $type = "." . $type;
+
+        $file = $root . $file . $type;
+
+        $meta = $var['META'] ?? [];
+        $local = $var['LOCAL'] ?? [];
+        $local_array = $var['LOCAL_ARRAY'] ?? [];
+
+        $meta = $obj->to_object($meta);
+        $local = $obj->to_object($local);
+
+        if(!file_exists($file))
+            Exception::throw_exception("execution Failed trying to include file ($file)","FileNotFound");
+
+        if(isset($vars['INCLUDE_AS_STRING']) && $vars['INCLUDE_AS_STRING'])
+            return $this->inc_file_as_string($file, $meta, $local, $local_array);
+
+        $layConfig = $this;
+
+        $once ? include_once $file : include $file;
+        return null;
     }
 }

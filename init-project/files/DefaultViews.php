@@ -5,9 +5,9 @@ namespace res\server\view;
 
 use BrickLayer\Lay\core\LayConfig;
 use BrickLayer\Lay\core\view\ViewBuilder;
-use BrickLayer\Lay\core\view\ViewBuilderStarter;
+use BrickLayer\Lay\core\view\ViewCast;
 
-class DefaultViews extends ViewBuilderStarter
+class DefaultViews extends ViewCast
 {
     private object $site_data;
     private object $client;

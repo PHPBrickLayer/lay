@@ -5,7 +5,7 @@ namespace BrickLayer\Lay\core\view\tags;
 use BrickLayer\Lay\core\LayConfig;
 use BrickLayer\Lay\core\view\enums\DomainType;
 use BrickLayer\Lay\core\view\ViewBuilder;
-use BrickLayer\Lay\core\view\ViewDomain;
+use BrickLayer\Lay\core\view\Domain;
 use BrickLayer\Lay\core\view\ViewSrc;
 
 final class Img {

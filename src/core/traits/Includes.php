@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace BrickLayer\Lay\core\traits;
 use BrickLayer\Lay\core\Exception;
-use BrickLayer\Lay\core\view\ViewDomainResources;
+use BrickLayer\Lay\core\view\DomainResource;
 use BrickLayer\Lay\libs\LayObject;
 
 trait Includes {
@@ -67,7 +67,7 @@ trait Includes {
         self::is_init();
         $slash = DIRECTORY_SEPARATOR;
 
-        $domain = ViewDomainResources::get()->domain;
+        $domain = DomainResource::get()->domain;
         $inc_root = $domain->layout;
         $view_root = $domain->plaster;
         $type_loc = $inc_root;

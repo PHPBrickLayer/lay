@@ -2,7 +2,7 @@
 
 namespace BrickLayer\Lay\core\view;
 
-abstract class ViewBuilderStarter
+abstract class ViewCast
 {
     public readonly ViewBuilder $builder;
 
@@ -24,7 +24,8 @@ abstract class ViewBuilderStarter
         if(!isset($this->builder))
             $this->builder = ViewBuilder::new();
 
-        ViewDomainResources::new()::init();
+        DomainResource::new()::init();
+
         $this->init_pages();
         $this->default();
         $this->pages();

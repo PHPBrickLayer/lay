@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace BrickLayer\Lay\orm;
 
+use BrickLayer\Lay\orm\traits\Controller;
 use mysqli;
 use mysqli_result;
 
@@ -12,7 +13,7 @@ use mysqli_result;
 class SQL extends Exception
 {
     use Config;
-    use traits\Controller;
+    use Controller;
 
     public array $query_info;
 

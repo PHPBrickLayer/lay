@@ -7,7 +7,7 @@ use JetBrains\PhpStorm\ExpectedValues;
 use BrickLayer\Lay\core\LayConfig;
 use BrickLayer\Lay\core\view\enums\DomainType;
 use BrickLayer\Lay\core\view\ViewBuilder;
-use BrickLayer\Lay\core\view\ViewDomain;
+use BrickLayer\Lay\core\view\Domain;
 
 final class Anchor {
     private string $link = "";
@@ -27,7 +27,7 @@ final class Anchor {
 
         if($domain_id) {
             $same_domain = $domain_id == $req['domain_id'];
-            $domain_id = ViewDomain::new()->get_domain_by_id($domain_id);
+            $domain_id = Domain::new()->get_domain_by_id($domain_id);
 
             $req['pattern'] = $domain_id ? $domain_id['patterns'][0] : "*";
 

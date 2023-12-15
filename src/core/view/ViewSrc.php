@@ -2,12 +2,10 @@
 declare(strict_types=1);
 namespace BrickLayer\Lay\core\view;
 
-use BrickLayer\Lay\core\LayConfig;
-
 final class ViewSrc {
-    public static function gen(string $src) : string {
-        $client = ViewDomainResources::get();
-        $base = $client->domain->domain_base;
+    public static function gen(string $src) : string
+    {
+        $client = DomainResource::get();
         
         $src = str_replace(
             [

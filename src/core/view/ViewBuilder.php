@@ -21,6 +21,7 @@ final class ViewBuilder
     const DEFAULT_ROUTE = "*";
     const route_storage_key = "__LAY_VIEWS__";
     const view_constants = "__LAY_VIEW_PRELUDE__";
+
     private static bool $in_init = false;
     private static bool $redirecting = false;
     private static bool $invoking = false;
@@ -56,11 +57,6 @@ final class ViewBuilder
         return $this;
     }
 
-    public function local(string $key, mixed $value): self
-    {
-        return $this->store_page_data(ViewEngine::key_local, $key, $value);
-    }
-
     private function store_page_data(string $section, ?string $key = null, mixed $value = null): self
     {
         if (self::$view_found)
@@ -72,7 +68,7 @@ final class ViewBuilder
                 return $this;
             }
 
-            self::$route_container[self::route_storage_key][self::view_constants][$section][$key] = $value;
+            self::$route_container[self::route_storage_key][self::view_constants][$section]->{$key} = $value;
             return $this;
         }
 
@@ -84,7 +80,7 @@ final class ViewBuilder
             return $this;
         }
 
-        self::$route_container[self::route_storage_key][self::$route][$section][$key] = $value;
+        self::$route_container[self::route_storage_key][self::$route][$section]->{$key} = $value;
         return $this;
     }
 
@@ -212,7 +208,7 @@ final class ViewBuilder
     public function request(#[ExpectedValues(['route', 'route_as_array', 'domain_type', 'domain_id', 'domain_uri', 'pattern', '*'])] string $key): DomainType|string|array
     {
         if (!isset(self::$current_route_data))
-            self::$current_route_data = ViewDomain::current_route_data("*");
+            self::$current_route_data = Domain::current_route_data("*");
 
         if ($key == "*")
             return self::$current_route_data;
@@ -220,7 +216,7 @@ final class ViewBuilder
         return self::$current_route_data[$key] ?? '';
     }
 
-    #[NoReturn] public function redirect(string $route, ViewBuilderStarter $builderStarter): void
+    #[NoReturn] public function redirect(string $route, ViewCast $builderStarter): void
     {
         if (self::$view_found)
             Exception::throw_exception(
@@ -258,6 +254,11 @@ final class ViewBuilder
     public function is_invoked() : bool
     {
         return self::$invoking;
+    }
+
+    public function local(string $key, mixed $value): self
+    {
+        return $this->store_page_data(ViewEngine::key_local, $key, $value);
     }
 
     public function core(string $key, bool $value): self

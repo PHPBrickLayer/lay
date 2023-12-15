@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
+
 namespace BrickLayer\Lay\core\view;
+
 use BrickLayer\Lay\core\api\ApiHooks;
-use BrickLayer\Lay\core\view\stan\DomainData;
-use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\ExpectedValues;
 use BrickLayer\Lay\core\enums\CustomContinueBreak;
 use BrickLayer\Lay\core\LayConfig;
@@ -11,7 +11,7 @@ use BrickLayer\Lay\core\traits\IsSingleton;
 use BrickLayer\Lay\core\view\enums\DomainCacheKeys;
 use BrickLayer\Lay\core\view\enums\DomainType;
 
-class ViewDomain {
+class Domain {
     use IsSingleton;
 
     private static string $current_route;
@@ -120,7 +120,7 @@ class ViewDomain {
         return $this->domain_cache_key(DomainCacheKeys::CACHED);
     }
 
-    private function activate_domain(string $id, string $pattern, ViewBuilderStarter|ApiHooks $builder, DomainType $domain_type) : void {
+    private function activate_domain(string $id, string $pattern, ViewCast|ApiHooks $builder, DomainType $domain_type) : void {
         $route = $this->get_current_route();
         $route = explode($pattern, $route, 2);
         $route = ltrim(end($route), "/");
@@ -308,7 +308,7 @@ class ViewDomain {
         }
     }
 
-    public function create(string $id, ViewBuilderStarter|ApiHooks $builder, array $patterns = ["*"]) : void {
+    public function create(string $id, ViewCast|ApiHooks $builder, array $patterns = ["*"]) : void {
         self::init_lay();
         self::init_cache_domain();
 

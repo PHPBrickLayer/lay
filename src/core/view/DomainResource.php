@@ -8,11 +8,31 @@ use BrickLayer\Lay\core\view\enums\DomainType;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\ObjectShape;
 
-class ViewDomainResources
+class DomainResource
 {
     use IsSingleton;
     
     private static object $resource;
+    private static object $plaster;
+
+    #[ObjectShape([
+        'route' => 'string',
+        'route_as_array' => 'array',
+        'domain_type' => DomainType::class,
+        'domain_id' => 'string',
+        'domain_uri' => 'string',
+        'domain_root' => 'string',
+        'pattern' => 'string',
+        0, 1, 2, 3, 4, 5, 6, 7, 8
+    ])]
+    private static function domain () : object
+    {
+        $data = Domain::current_route_data("*");
+        $data['plaster'] = $data['domain_root'] . "plaster" . DIRECTORY_SEPARATOR;
+        $data['layout'] = $data['domain_root'] . "layout" . DIRECTORY_SEPARATOR;
+
+        return (object) $data;
+    }
 
     public static function init() : void
     {
@@ -78,22 +98,14 @@ class ViewDomainResources
         return self::$resource;
     }
 
-    #[ObjectShape([
-        'route' => 'string',
-        'route_as_array' => 'array',
-        'domain_type' => DomainType::class,
-        'domain_id' => 'string',
-        'domain_uri' => 'string',
-        'domain_root' => 'string',
-        'pattern' => 'string',
-        0, 1, 2, 3, 4, 5, 6, 7, 8
-    ])]
-    private static function domain () : object
+    public static function make_plaster(object $values) : void
     {
-        $data = ViewDomain::current_route_data("*");
-        $data['plaster'] = $data['domain_root'] . "plaster" . DIRECTORY_SEPARATOR;
-        $data['layout'] = $data['domain_root'] . "layout" . DIRECTORY_SEPARATOR;
-
-        return (object) $data;
+        self::$plaster = $values;
     }
+
+    public static function plaster() : object
+    {
+        return self::$plaster;
+    }
+
 }

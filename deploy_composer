@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 require_once __DIR__ . DIRECTORY_SEPARATOR . "AutoLoader.php";
 
@@ -7,7 +7,7 @@ $root = $server->root;
 $temp = $server->temp;
 $command = file_exists($root . "composer.lock") ? "update" : "install";
 
-exec("export HOME=$root && cd $root && composer $command --no-dev 2>&1", $out);
+exec("export HOME=$root && cd $root && composer $command --no-dev --optimize-autoloader 2>&1", $out);
 
 file_put_contents($temp . "deploy_composer_output.txt", implode("\n", $out));
 

@@ -2,3 +2,4 @@
 global $view;
 
 echo $view->body;
+
