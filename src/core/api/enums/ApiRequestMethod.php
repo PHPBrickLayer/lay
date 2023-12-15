@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\core\api\enums;
+namespace BrickLayer\Lay\core\api\enums;
 
 enum ApiRequestMethod : string
 {

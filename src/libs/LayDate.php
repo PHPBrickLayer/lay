@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
 use DateTime;
-use Oleonard\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\core\traits\IsSingleton;
 
 class LayDate {
     use IsSingleton;

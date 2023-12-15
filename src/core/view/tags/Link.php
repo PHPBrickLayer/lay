@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\view\tags;
+namespace BrickLayer\Lay\core\view\tags;
 
-use Oleonard\Lay\core\view\ViewSrc;
+use BrickLayer\Lay\core\view\ViewSrc;
 
 final class Link {
     private bool $rel_set = false;
@@ -11,8 +11,8 @@ final class Link {
         "media" => "all",
         "type" => "text/css",
     ];
-    
-    use Oleonard\Lay\core\view\tags\traits\Standard;
+
+    use \BrickLayer\Lay\core\view\tags\traits\Standard;
     
     public function rel(string $rel) : self {
         $this->rel_set = true;

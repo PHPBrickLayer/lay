@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\interfaces;
+namespace BrickLayer\Lay\interfaces;
 
 interface Model {
     public function add(array $columns) : array;

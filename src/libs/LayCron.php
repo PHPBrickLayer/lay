@@ -1,10 +1,10 @@
 <?php
 
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
 use JetBrains\PhpStorm\ExpectedValues;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\core\LayConfig;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\core\LayConfig;
 
 final class LayCron {
     private const CRON_FILE = "/tmp/crontab.txt";

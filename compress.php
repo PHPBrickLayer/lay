@@ -1,10 +1,9 @@
-#!/usr/bin/php
 <?php
 require_once __DIR__ . DIRECTORY_SEPARATOR . "AutoLoader.php";
 
-use Oleonard\Lay\libs\CopyDirectory;
-use Oleonard\Lay\libs\LayCache;
-use Oleonard\Lay\libs\LayDate;
+use BrickLayer\Lay\libs\CopyDirectory;
+use BrickLayer\Lay\libs\LayCache;
+use BrickLayer\Lay\libs\LayDate;
 
 $intro = function() {
     print "----------------------------------------------------------\n";
@@ -32,22 +31,7 @@ $intro = function() {
 };
 
 $args = $argv;
-$script_name = "compress";
-
-if(in_array(("--help"),$args,true) || in_array(("-h"),$args,true)){
-    $intro();
-    print ">>> This is a batch minifier for JS/CSS, that takes a directory as an input and provides the respected output in the\n";
-    print ">>> directory indicated using the -o flag. This helps save production time\n";
-    print "----------------------------------------------------------\n";
-    print "### Usage: [$script_name] {directory_name} [--output || -o] {output_directory}\n";
-    print "### Example: php $script_name dir/js -o prod-dir/js\n";
-    die;
-}
-
-if($argc == 1) {
-    $intro();
-    die;
-}
+$script_name = "compress.php";
 
 $opts = [];
 $get_arg = function (string $arg,  int $index, &$pipe, string ...$cmd_key) use ($args) : void
@@ -63,10 +47,26 @@ $get_arg = function (string $arg,  int $index, &$pipe, string ...$cmd_key) use (
     $pipe = $args[($index + 1)] ?? null;
 };
 
+if($argc == 1) {
+    $intro();
+    die;
+}
+
 foreach ($args as $k => $a) {
     $get_arg($a, $k, $opts['output_dir'], '-o', "--output");
     $get_arg($a, $k, $opts['ignore'], '-i', "--ignore");
     $get_arg($a, 0, $opts['no_cache'], '-nc', "--no-cache");
+    $get_arg($a, 0, $opts['help'], '-h', "--help");
+}
+
+if($opts['help']) {
+    $intro();
+    print ">>> This is a batch minifier for JS/CSS, that takes a directory as an input and provides the respected output in the\n";
+    print ">>> directory indicated using the -o flag. This helps save production time\n";
+    print "----------------------------------------------------------\n";
+    print "### Usage: [$script_name] {directory_name} [--output || -o] {output_directory}\n";
+    print "### Example: php $script_name dir/js -o prod-dir/js\n";
+    die;
 }
 
 $src_dir = $args[1];

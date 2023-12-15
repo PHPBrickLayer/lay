@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
-use Oleonard\Lay\core\traits\IsSingleton;
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\orm\SQL;
 use stdClass;
 
 class LayObject

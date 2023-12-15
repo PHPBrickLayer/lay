@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\view;
+namespace BrickLayer\Lay\core\view;
 
 use Closure;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\traits\IsSingleton;
-use Oleonard\Lay\core\view\tags\Link;
-use Oleonard\Lay\core\view\tags\Script;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\core\view\tags\Link;
+use BrickLayer\Lay\core\view\tags\Script;
 use Opis\Closure\SerializableClosure;
 
 /**
@@ -15,6 +15,8 @@ use Opis\Closure\SerializableClosure;
  */
 final class ViewEngine {
     use IsSingleton;
+    private const view_engine_session = "__LAY_VIEW_ENGINE__";
+
     const key_core = "core";
     const key_page = "page";
     const key_body = "body";
@@ -30,13 +32,12 @@ final class ViewEngine {
         $const = array_replace_recursive(self::$constant_attributes, $meta);
 
         $route = ViewDomain::current_route_data("route");
-        $url = LayConfig::new()->get_site_data()->base . $route;
+        $url = LayConfig::site_data()->base . $route;
 
         self::$constant_attributes = [
             self::key_core => [
                 "close_connection" => $const[self::key_core]['close_connection'] ?? true,
                 "script" => $const[self::key_core]['script'] ?? true,
-                "strict" => $const[self::key_core]['strict'] ?? true,
                 "skeleton" => $const[self::key_core]['skeleton'] ?? true,
                 "append_site_name" => $const[self::key_core]['append_site_name'] ?? true,
             ],
@@ -50,10 +51,6 @@ final class ViewEngine {
                 "desc" => $const[self::key_page]['desc'] ?? "",
                 "img" => $const[self::key_page]['img'] ?? null,
                 "author" => $const[self::key_page]['author'] ?? null,
-
-                // It takes the value {front | back}, this helps ViewPainter locate internal assets matched in folders
-                // named __front | __back, for things like: views, includes and controllers
-                "type" =>  $const[self::key_page]['type'] ?? null,
             ],
             self::key_body =>  [
                 "class" =>  $const[self::key_body]['class'] ?? null,
@@ -99,8 +96,8 @@ final class ViewEngine {
         if(empty(self::$constant_attributes))
             self::constants([]);
 
-        $layConfig = LayConfig::instance();
-        $data = $layConfig->get_site_data();
+        $layConfig = LayConfig::new();
+        $data = $layConfig::site_data();
 
         $const = array_replace_recursive(self::$constant_attributes, $page_data);;
 
@@ -132,16 +129,17 @@ final class ViewEngine {
         $meta = self::$meta_data;
 
         $layConfig = LayConfig::instance();
-        $site_data = $layConfig->get_site_data();
-        $client = $layConfig->get_res__client();
+        $site_data = $layConfig::site_data();
+        $client = ViewDomainResources::get();
         $page = $meta[self::key_page];
 
-        $img = ViewSrc::gen($page['img'] ?? $site_data->img->meta ?? $site_data->img->logo);
-        $favicon = ViewSrc::gen($site_data->img->favicon);
+        $lay_api = $site_data->global_api ?? $site_data->domain . "api/";
+        $img = ViewSrc::gen($page['img'] ?? $client->shared->img_default->meta ?? $client->shared->img_default->logo);
+        $favicon = ViewSrc::gen($client->shared->img_default->favicon);
         $author = $page['author'] ?? $site_data->author;
         $title = $page['title'];
         $title_raw = $page['title_raw'];
-        $base = $page['base'] ?? $site_data->base;
+        $base = $page['base'] ?? $client->domain->domain_uri;
         $charset = $page['charset'];
         $desc = $page['desc'];
         $color = $site_data->color->pry;
@@ -166,7 +164,6 @@ final class ViewEngine {
             <meta name="apple-mobile-web-app-capable" content="yes">
             <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
             <!-- Framework Tags-->
-            <meta property="lay:page_type" id="LAY-PAGE-TYPE" content="{$page['type']}">
             <meta property="lay:site_name_short" id="LAY-SITE-NAME-SHORT" content="{$site_data->name->short}">
             <meta property="lay:url" id="LAY-PAGE-URL" content="{$page['route']}">
             <!-- // Framework Tags-->
@@ -187,14 +184,12 @@ final class ViewEngine {
         </head>
         <body class="{$meta[self::key_body]['class']}" {$meta[self::key_body]['attr']}>
             <!--//START LAY CONSTANTS-->
-            <input type="hidden" id="LAY-API" value="$client->api">
+            <input type="hidden" id="LAY-API" value="$lay_api">
             <input type="hidden" id="LAY-UPLOAD" value="$client->upload">
-            <input type="hidden" id="LAY-CUSTOM-IMG" value="{$client->custom->img}">
-            <input type="hidden" id="LAY-BACK-IMG" value="{$client->back->img}">
-            <input type="hidden" id="LAY-FRONT-IMG" value="{$client->front->img}">
-            <input type="hidden" id="LAY-BACK-ROOT" value="{$client->back->root}">
-            <input type="hidden" id="LAY-FRONT-ROOT" value="{$client->front->root}">
-            <input type="hidden" id="LAY-CUSTOM-ROOT" value="{$client->custom->root}">
+            <input type="hidden" id="LAY-SHARED-IMG" value="{$client->shared->img}">
+            <input type="hidden" id="LAY-SHARED-ROOT" value="{$client->shared->root}">
+            <input type="hidden" id="LAY-DOMAIN-IMG" value="$client->img">
+            <input type="hidden" id="LAY-DOMAIN-ROOT" value="$client->root">
             <!--//END LAY CONSTANTS-->
             {$this->skeleton_body()}
             {$this->skeleton_script()}
@@ -210,15 +205,8 @@ final class ViewEngine {
     # This uses the parameters passed from the page array to handle the view either as Closure or by inclusion
     private function view_handler(string $view_section) : string {
         $meta = self::$meta_data;
-
         $meta_view = $meta[self::key_view][$view_section];
-        $layConfig = LayConfig::instance();
-        $inc_type = $meta[self::key_page]['type'] == "back" ? "inc_back" : "inc_front";
-        $type = "front";
-        $section_prefix = $view_section == "body" ? "view" : "inc";
-
-        if($meta[self::key_page]['type'] == "back")
-            $type = "back";
+        $layConfig = LayConfig::new();
 
         // Accept the type of unique view type from the current page and store it in the `$meta_view` variable.
         // This could be a view file, which will simply be the filename without its file extension (.view).
@@ -234,14 +222,14 @@ final class ViewEngine {
         }
 
         elseif($meta_view)
-            $layConfig->inc_file(explode(".$section_prefix", $meta_view)[0], $section_prefix . "_" . $type, strict: $meta[self::key_core]['strict']);
+            $layConfig->inc_file(explode(".view", $meta_view)[0], "view");
 
         $meta_view = ob_get_clean();
 
         // This includes the `inc file` related to the section.
         // That is: body.inc for `body section`, head.inc for `head section`.
         if($meta[self::key_core]['skeleton'] === true)
-            return $layConfig->inc_file($view_section, $inc_type, strict: $meta[self::key_core]['strict'], vars: [
+            return $layConfig->inc_file($view_section, "inc", vars: [
                 "INCLUDE_AS_STRING" => true,
                 "META" => [
                     self::key_view => [
@@ -331,27 +319,28 @@ final class ViewEngine {
 
     private function core_script() : string {
         $meta = self::$meta_data;
-        $layConfig = LayConfig::instance();
+        $layConfig = LayConfig::new();
         $js_template = fn ($src, $attr = []) => $this->script_tag_template($src, $attr);
         $core_script = "";
 
         if($meta[self::key_core]['script']) {
             $s = DIRECTORY_SEPARATOR;
-            $env = strtolower($layConfig::get_env());
-            $lay_root = $layConfig->get_res__server("lay");
-            $lay_base = $layConfig->get_res__client("lay");
+            $domain = ViewDomainResources::get();
+            $lay_base = $domain->lay->uri;
+            $lay_root = $domain->lay->root;
+
             list($omj,$const) = null;
 
-            if ($env == "prod") {
-                if (file_exists($lay_root . 'omj$' . $s . 'index.min.js'))
-                    $omj = $js_template($lay_base . 'omj$/index.min.js', ['defer' => false]);
+            if ($layConfig::$ENV_IS_PROD) {
+                if (file_exists($lay_root . $s . 'index.min.js'))
+                    $omj = $js_template($lay_base . 'index.min.js', ['defer' => false]);
 
-                if (file_exists($lay_root . "static{$s}js{$s}constants.min.js"))
-                    $const = $js_template($lay_base . 'static/js/constants.min.js', ['defer' => false]);
+                if (file_exists($lay_root . $s . "constants.min.js"))
+                    $const = $js_template($lay_base . 'constants.min.js', ['defer' => false]);
             }
 
-            $core_script .= $omj ?? $js_template($lay_base . 'omj$/index.js',['defer' => false]);
-            $core_script .= $const ?? $js_template($lay_base . 'static/js/constants.js', ['defer' => false]);
+            $core_script .= $omj ?? $js_template($lay_base . 'index.js',['defer' => false]);
+            $core_script .= $const ?? $js_template($lay_base . 'constants.js', ['defer' => false]);
         }
 
         return $core_script;

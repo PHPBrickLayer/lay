@@ -1,10 +1,10 @@
 <?php
 
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\traits\IsSingleton;
 
 class LayCache
 {

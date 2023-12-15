@@ -1,20 +1,18 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\traits;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\libs\LayObject;
-use Oleonard\Lay\orm\SQL;
-use Oleonard\Lay\AutoLoader;
+namespace BrickLayer\Lay\core\traits;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\libs\LayObject;
+use BrickLayer\Lay\orm\SQL;
+use BrickLayer\Lay\AutoLoader;
 use stdClass;
 
 trait Init {
-    private static string $ENV;
     private static string $dir;
     private static string $base;
     private static string $base_no_proto;
     private static string $base_no_proto_no_www;
     private static string $env_host;
-    private static string $proto_plain;
 
     private static bool $INITIALIZED = false;
     private static bool $FIRST_CLASS_CITI_ACTIVE = false;
@@ -26,8 +24,20 @@ trait Init {
             self::first_class_citizens();
     }
 
+    private static function set_web_root(&$options) : void
+    {
+        $options['base'] = self::$base;
+        $options['base_no_proto'] = self::$base_no_proto;
+        $options['base_no_proto_no_www'] = self::$base_no_proto_no_www;
+
+        $web = $options['using_domain'] ? "" : "/web";
+
+        $options['domain'] = self::$base . ( $web ? "web/" : "" );
+        $options['domain_no_proto'] = self::$base_no_proto . $web;
+        $options['domain_no_proto_no_www'] = self::$base_no_proto_no_www . $web;
+    }
+
     private static function set_dir() : void {
-//        self::$dir = AutoLoader::get_root_dir();
         self::$dir = AutoLoader::get_root_dir();
     }
 
@@ -35,12 +45,35 @@ trait Init {
         self::$FIRST_CLASS_CITI_ACTIVE = true;
         self::set_dir();
 
+        // Don't bother running any process if document root is not set.
+        // This means the framework is being accessed from the cli,
+        // we don't want run unnecessary compute and waste resources.
+        if(empty($_SERVER['DOCUMENT_ROOT']))
+            return;
+
         $slash          = DIRECTORY_SEPARATOR;
-        $base           = explode(str_replace("/", $slash, $_SERVER['DOCUMENT_ROOT']), self::$dir);
+        $base           = str_replace($slash, "/", $_SERVER['DOCUMENT_ROOT']);
+
+        $pin = $base;
+        $string = self::$dir;
+
+        if(count_chars($base) > count_chars(self::$dir)) {
+            $pin = self::$dir;
+            $string = $base;
+        }
+
+        $pin = rtrim($pin, "/");
+        $base           = explode($pin, $string);
+        $options['using_domain'] = str_starts_with($base[1], "/web/domains/");
+
+        if($options['using_domain'])
+            $base = [""];
+
+        self::$layConfigOptions['header']['using_domain'] = $options['using_domain'];
+
         $http_host      = $_SERVER['HTTP_HOST'] ?? "cli";
         $env_host       = $_SERVER['REMOTE_ADDR'] ?? "cli";
-        self::$proto_plain = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME'];
-        $proto = self::$proto_plain . "://";
+        $proto          = ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME']) . "://";
         $base_no_proto  = rtrim(str_replace($slash,"/", end($base)),"/");
 
         self::$base = $proto . $http_host . $base_no_proto . "/";
@@ -58,10 +91,7 @@ trait Init {
 
         self::$ENV_IS_DEV = !self::$ENV_IS_PROD;
 
-        $options['base'] = self::$base;
-        $options['base_no_proto'] = self::$base_no_proto;
-        $options['base_no_proto_no_www'] = self::$base_no_proto_no_www;
-        $options['proto'] = self::$proto_plain;
+        self::set_web_root($options);
 
         self::set_internal_site_data($options);
     }
@@ -71,22 +101,16 @@ trait Init {
 
         $options = self::$layConfigOptions ?? [];
 
-        $options = array_merge($options, [
+        $options = [
             # This tells Lay to use `dev/` folder on production rather than `prod/` folder as the source for client resources
             "use_prod" => $options['switch']['use_prod'] ?? true,
             # On true, this strips space from the html output. Note; it doesn't strip space off the <script></script> elements or anything in-between elements for that matter
             "compress_html" => $options['switch']['compress_html'] ?? true,
-            # This forces Lay to use https:// instead of http:// for its proto; Default is true for production environment
-            # A use case is; when simulating production server, but don't have access to ssl
-            "use_https" => $options['switch']['use_https'] ?? true,
-            "default_inc_routes" => $options['switch']['default_inc_routes'] ?? true,
             # Used by the Domain module to instruct the handler to cache all the listed domains in a session or cookie,
             # depending on the value sent by dev
             "cache_domains" => $options['switch']['cache_domains'] ?? true,
-            # Used by the View module to instruct the handler to cache all the listed views in a session or cookie,
-            # depending on the value sent by dev
-            "cache_views" => $options['switch']['cache_views'] ?? true,
-            "env" => $options['header']['env'] ?? null,
+            "global_api" => $options['header']['api'] ?? null,
+            "using_domain" => $options['header']['using_domain'] ?? null,
             "name" => [
                 "short" => $options['meta']['name']['short'] ?? "Lay - Lite PHP Framework",
                 "full" => $options['meta']['name']['full'] ?? "Lay - Lite PHP Framework | Simple, Light, Quick",
@@ -100,45 +124,22 @@ trait Init {
             "mail" => $options['meta']['mail'] ?? [],
             "tel" => $options['meta']['tel'] ?? [],
             "others" => $options['others'] ?? []
-        ]);
+        ];
 
         self::$COMPRESS_HTML = $options['compress_html'];
-        self::$USE_DEFAULT_ROUTE = $options['default_inc_routes'];
-
-        $env = $options['env'];
-
-        if($env === null)
-            $env = self::$ENV_IS_PROD ? 'prod' : 'dev';
-
-        switch (strtolower($env)) {
-            default:
-                $env = "dev";
-                self::$ENV_IS_PROD = false;
-                self::$ENV_IS_DEV = true;
-            break;
-            case "prod": case "production":
-            $env = "prod";
-            self::$ENV_IS_PROD = true;
-            self::$ENV_IS_DEV = false;
-            break;
-        }
-
-        self::$client   = new stdClass();
+        
         self::$server   = new stdClass();
-        self::$ENV = self::$ENV ?? $env;
-        $env_src = $options['use_prod'] ? $env : "dev";
+        
         $options['mail'][0] = $options['mail'][0] ?? "info@" . self::$base_no_proto;
 
-        // Reinitialize first class citizens
-        $options['base'] = self::$base;
-        $options['base_no_proto'] = self::$base_no_proto;
-        $options['base_no_proto_no_www'] = self::$base_no_proto_no_www;
-        $options['proto'] = self::$proto_plain;
+        self::set_web_root($options);
 
-        self::set_internal_res_client(self::$base, $env_src);
+        $api = $options['domain'] . $options['global_api'];
+
         self::set_internal_site_data($options);
         self::set_internal_res_server(self::$dir);
         self::load_env();
+
         self::$INITIALIZED = true;
         return self::$instance;
     }

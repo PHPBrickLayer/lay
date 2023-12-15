@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\orm;
+namespace BrickLayer\Lay\orm;
 
-use Oleonard\Lay\AutoLoader;
-use Oleonard\Lay\core\LayConfig;
+use BrickLayer\Lay\AutoLoader;
+use BrickLayer\Lay\core\LayConfig;
 
 class Exception
 {

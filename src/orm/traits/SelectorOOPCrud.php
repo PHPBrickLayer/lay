@@ -1,8 +1,8 @@
 <?php
 
-namespace Oleonard\Lay\orm\traits;
+namespace BrickLayer\Lay\orm\traits;
 
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\orm\SQL;
 
 trait SelectorOOPCrud
 {

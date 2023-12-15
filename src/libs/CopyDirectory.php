@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
 use Closure;
 

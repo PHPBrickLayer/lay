@@ -1,8 +1,8 @@
 <?php
 
-namespace tests\Unit\api;
+namespace Unit\api;
 
-use Oleonard\Lay\core\api\ApiEngine;
+use BrickLayer\Lay\core\api\ApiEngine;
 use PHPUnit\Framework\TestCase;
 use tests\Unit\FakeController;
 

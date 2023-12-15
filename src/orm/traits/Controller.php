@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\orm\traits;
+namespace BrickLayer\Lay\orm\traits;
 
-use Oleonard\Lay\core\traits\IsSingleton;
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\orm\SQL;
 
 trait Controller{
     use IsSingleton;

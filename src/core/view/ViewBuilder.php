@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\core\view;
+namespace BrickLayer\Lay\core\view;
 
 use Closure;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\ExpectedValues;
 use JetBrains\PhpStorm\NoReturn;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\traits\IsSingleton;
-use Oleonard\Lay\core\view\enums\DomainType;
-use Oleonard\Lay\core\view\tags\Anchor;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\core\view\enums\DomainType;
+use BrickLayer\Lay\core\view\tags\Anchor;
 
 // TODO: Find a way to cache views
 final class ViewBuilder
@@ -208,8 +208,8 @@ final class ViewBuilder
         ]);
     }
 
-    #[ArrayShape(['route' => 'string', 'route_as_array' => 'array', 'domain_type' => DomainType::class, 'domain_id' => 'string', 'pattern' => 'string', 0, 1, 2, 3, 4, 5, 6, 7, 8])]
-    public function request(#[ExpectedValues(['route', 'route_as_array', 'domain_type', 'domain_id', 'pattern', '*'])] string $key): DomainType|string|array
+    #[ArrayShape(['route' => 'string', 'route_as_array' => 'array', 'domain_type' => DomainType::class, 'domain_id' => 'string', 'domain_uri' => 'string', 'pattern' => 'string', 0, 1, 2, 3, 4, 5, 6, 7, 8])]
+    public function request(#[ExpectedValues(['route', 'route_as_array', 'domain_type', 'domain_id', 'domain_uri', 'pattern', '*'])] string $key): DomainType|string|array
     {
         if (!isset(self::$current_route_data))
             self::$current_route_data = ViewDomain::current_route_data("*");

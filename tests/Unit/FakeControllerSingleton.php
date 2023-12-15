@@ -1,8 +1,8 @@
 <?php
 
-namespace tests\Unit;
+namespace Unit;
 
-use Oleonard\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\core\traits\IsSingleton;
 
 class FakeControllerSingleton
 {

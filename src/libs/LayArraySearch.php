@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
 class LayArraySearch
 {

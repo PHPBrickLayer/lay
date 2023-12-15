@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
 abstract class LayCSV {
     protected static function resolve(int $code, string $message, ?string $data = null) : array {

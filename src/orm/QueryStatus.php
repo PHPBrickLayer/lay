@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\orm;
+namespace BrickLayer\Lay\orm;
 
 enum QueryStatus : string {
     case success = "Successful";

@@ -1,18 +1,18 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\view\tags;
+namespace BrickLayer\Lay\core\view\tags;
 
-use Oleonard\Lay\core\enums\CustomContinueBreak;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\view\ViewSrc;
+use BrickLayer\Lay\core\enums\CustomContinueBreak;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\view\ViewSrc;
 
 final class Script {
     private const ATTRIBUTES = [
         "defer" => "true",
         "type" => "text/javascript",
     ];
-    
-    use Oleonard\Lay\core\view\tags\traits\Standard;
+
+    use \BrickLayer\Lay\core\view\tags\traits\Standard;
 
     public function type(string $type) : self {
         return $this->attr('type', $type);

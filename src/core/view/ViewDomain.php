@@ -1,24 +1,21 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\view;
+namespace BrickLayer\Lay\core\view;
+use BrickLayer\Lay\core\api\ApiHooks;
+use BrickLayer\Lay\core\view\stan\DomainData;
+use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\ExpectedValues;
-use Oleonard\Lay\core\enums\CustomContinueBreak;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\traits\IsSingleton;
-use Oleonard\Lay\core\view\enums\DomainCacheKeys;
-use Oleonard\Lay\core\view\enums\DomainType;
+use BrickLayer\Lay\core\enums\CustomContinueBreak;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\traits\IsSingleton;
+use BrickLayer\Lay\core\view\enums\DomainCacheKeys;
+use BrickLayer\Lay\core\view\enums\DomainType;
 
 class ViewDomain {
     use IsSingleton;
 
     private static string $current_route;
-    private static array $current_route_details = [
-        "route" => "index",
-        "route_as_array" => [],
-        "domain_type" => DomainType::LOCAL,
-        "pattern" => "*",
-        "domain_id" => "",
-    ];
+    private static array $current_route_details;
 
     private static bool $lay_init = false;
     private static LayConfig $layConfig;
@@ -123,7 +120,7 @@ class ViewDomain {
         return $this->domain_cache_key(DomainCacheKeys::CACHED);
     }
 
-    private function activate_domain(string $id, string $pattern, ViewBuilderStarter $builder, DomainType $domain_type) : void {
+    private function activate_domain(string $id, string $pattern, ViewBuilderStarter|ApiHooks $builder, DomainType $domain_type) : void {
         $route = $this->get_current_route();
         $route = explode($pattern, $route, 2);
         $route = ltrim(end($route), "/");
@@ -132,11 +129,20 @@ class ViewDomain {
         self::$domain_found = true;
         $this->cache_active_domain($id, $pattern);
 
+        $file = explode("\\", $builder::class);
+        array_pop($file);
+
+        $data = LayConfig::site_data();
+        $base = $data->using_domain ? "" : implode("/", $file) . "/";
+
         self::$current_route_details['route'] = $route ?: "index";
         self::$current_route_details['route_as_array'] = $route_as_array;
         self::$current_route_details['pattern'] = $pattern;
         self::$current_route_details['domain_type'] = $domain_type;
         self::$current_route_details['domain_id'] = $id;
+        self::$current_route_details['domain_uri'] = $data->domain . ($pattern != '*' ? $pattern . '/' : '');
+        self::$current_route_details['domain_base'] = $data->base . $base;
+        self::$current_route_details['domain_root'] = LayConfig::server_data()->root . implode(DIRECTORY_SEPARATOR, $file) . DIRECTORY_SEPARATOR;
 
         $builder->init();
     }
@@ -302,7 +308,7 @@ class ViewDomain {
         }
     }
 
-    public function create(string $id, array $patterns, ViewBuilderStarter $builder) : void {
+    public function create(string $id, ViewBuilderStarter|ApiHooks $builder, array $patterns = ["*"]) : void {
         self::init_lay();
         self::init_cache_domain();
 
@@ -320,7 +326,19 @@ class ViewDomain {
         $this->cache_patterns($id, $patterns);
     }
 
-    public static function current_route_data(#[ExpectedValues(['route','route_as_array','domain_type','pattern', '*'])] string $key) : string|DomainType|array
+    public static function current_route_data(
+        #[ExpectedValues([
+            'route',
+            'route_as_array',
+            'domain_type',
+            'domain_id',
+            'domain_uri',
+            'domain_root',
+            'pattern',
+            '*',
+        ])]
+        string $key
+    ) : string|DomainType|array
     {
         if($key == "*")
             return self::$current_route_details;

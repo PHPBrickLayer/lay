@@ -1,57 +1,21 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\traits;
+namespace BrickLayer\Lay\core\traits;
 use Dotenv\Dotenv;
+use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\ExpectedValues;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\libs\LayObject;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\libs\LayObject;
+use JetBrains\PhpStorm\ObjectShape;
 
 trait Resources {
-    private static object $client;
     private static object $server;
     private static object $site;
 
     private static bool $env_loaded = false;
 
     private static string $CLIENT_VALUES = "";
-    ///### Assets Resource and Page Metadata
-    protected static function set_internal_res_client(string $base, string $env_src) : void {
-        $root_client = $base . "res/client/";
-        $custom = $env_src . "/custom/";
-        $front = $env_src . "/front/";
-        $back = $env_src . "/back/";
-
-        $obj = new \stdClass();
-
-        $custom_2d = new \stdClass();
-        $custom_2d->root = $root_client     . $custom;
-        $custom_2d->img = $root_client      . $custom . "images/";
-        $custom_2d->css = $root_client      . $custom . "css/";
-        $custom_2d->js = $root_client       . $custom . "js/";
-        $custom_2d->plugin = $root_client   . $custom . "plugin/";
-
-        $front_2d = new \stdClass();
-        $front_2d->root = $root_client      . $front;
-        $front_2d->img = $root_client       . $front . "images/";
-        $front_2d->css = $root_client       . $front . "css/";
-        $front_2d->js = $root_client        . $front . "js/";
-
-        $back_2d = new \stdClass();
-        $back_2d->root = $root_client       . $back;
-        $back_2d->img = $root_client        . $back . "images/";
-        $back_2d->css = $root_client        . $back . "css/";
-        $back_2d->js = $root_client         . $back . "js/";
-
-        $obj->api = $base . "api/";
-        $obj->lay = $base . "Lay/";
-        $obj->upload = $base . "res/uploads/";
-        $obj->root = $root_client . $env_src;
-        $obj->custom = $custom_2d;
-        $obj->front = $front_2d;
-        $obj->back = $back_2d;
-
-        self::$client = $obj;
-    }
+    
     protected static function set_internal_res_server(string $dir) : void {
 
         $slash = DIRECTORY_SEPARATOR;
@@ -59,16 +23,14 @@ trait Resources {
 
         $obj = new \stdClass();
 
+        $obj->lay     =   $dir  .   "vendor"    .   $slash .    "bricklayer" . $slash .   "lay" . $slash;
         $obj->root    =   $dir;
-        $obj->dir     =   $dir;
-        $obj->temp    =   $dir             . ".lay_temp"   . $slash;
-        $obj->lay     =   $dir             . "Lay"         . $slash;
-        $obj->lay_env =   $root_server     . "includes"    . $slash . "__env" . $slash;
-        $obj->inc     =   $root_server     . "includes"    . $slash;
-        $obj->ctrl    =   $root_server     . "controller"  . $slash;
-        $obj->view    =   $root_server     . "view"        . $slash;
-        $obj->upload  =   "res" . $slash . "uploads" . $slash;
-
+        $obj->temp    =   $dir  .   ".lay_temp" .   $slash;
+        $obj->bricks  =   $dir  .   "bricks"    .   $slash;
+        $obj->utils   =   $dir  .   "utils"     .   $slash;
+        $obj->web     =   $dir  .   "web"       .   $slash;
+        $obj->domains =   $dir  .   "web"       .   $slash .    "domains" . $slash;
+        
         self::$server = $obj;
     }
     protected static function set_internal_site_data(array $options) : void {
@@ -76,12 +38,6 @@ trait Resources {
             "author" => $options['author'] ?? null,
             "copy" => $options['copy'] ?? null,
             "name" => $options['name'] ?? null,
-            "img" => [
-                "logo" => isset(self::$client) ? self::$client->custom->img . "logo.png" : null,
-                "favicon" => isset(self::$client) ? self::$client->custom->img . "favicon.png" : null,
-                "icon" => isset(self::$client) ? self::$client->custom->img . "icon.png" : null,
-                "meta" => isset(self::$client) ? self::$client->custom->img . "meta.png" : null,
-            ],
             "color" => $options['color'] ?? null,
             "mail" => [
                 ...$options['mail'] ?? []
@@ -133,12 +89,9 @@ trait Resources {
         array_pop($index);
 
         $object_push = function (&$key) use ($value) {
-            $key = str_replace(
-                [ "@back","@front","@custom" ],
-                [ rtrim(self::$client->back->root,"/"), rtrim(self::$client->front->root,"/"), rtrim(self::$client->custom->root,"/")],
-                $value
-            );
+            $key = $value;
         };
+
         switch (count($index)){
             default:
                 $object_push($resource->{$index[0]});
@@ -159,26 +112,6 @@ trait Resources {
                 $object_push($resource->{$index[0]}->{$index[1]}->{$index[2]}->{$index[3]}->{$index[4]}->{$index[5]});
                 break;
         }
-    }
-
-    public static function set_res__client(
-        #[ExpectedValues(["back","front","upload"])] string $client_index,
-        mixed ...$chain_and_value
-    ) : void {
-        self::is_init();
-        self::set_res(self::$client,["back","front","upload"], $client_index, ...$chain_and_value);
-    }
-    public function get_res__client(
-        #[ExpectedValues(['api', 'lay', 'upload', 'custom', 'front', 'back'])] string $client_index = "",
-        string ...$index_chain
-    ) : mixed {
-        self::is_init();
-        return self::get_res("client", self::$client, $client_index, ...$index_chain);
-    }
-
-    public static function res_client() : object
-    {
-        return self::$client;
     }
 
     public static function set_res__server(
@@ -204,11 +137,15 @@ trait Resources {
         return self::get_res("server", self::$server, $server_index, ...$index_chain);
     }
 
-    /**
-     * @see set_internal_res_server
-     * @return object
-     */
+
     public static function res_server() : object
+    {
+
+        return self::server_data();
+    }
+
+    #[ObjectShape(["lay" => 'string', "root" => 'string', "temp" => 'string', "bricks" => 'string', "utils" => 'string', "web" => 'string', "domains" => 'string',])]
+    public static function server_data() : object
     {
         if(!isset(self::$server)){
             self::set_dir();
@@ -275,6 +212,6 @@ trait Resources {
         if(self::$env_loaded)
             return;
 
-        Dotenv::createImmutable(self::res_server()->lay_env)->load();
+        Dotenv::createImmutable(self::res_server()->root)->load();
     }
 }

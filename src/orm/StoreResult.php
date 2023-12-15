@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\orm;
+namespace BrickLayer\Lay\orm;
 
 use Closure;
 use mysqli_result;

@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\orm\traits;
+namespace BrickLayer\Lay\orm\traits;
 
 use Closure;
 use JetBrains\PhpStorm\ExpectedValues;
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\orm\SQL;
 
 trait SelectorOOP
 {

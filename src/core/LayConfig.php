@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core;
+namespace BrickLayer\Lay\core;
 
 final class LayConfig {
-    use \Oleonard\Lay\core\traits\IsSingleton;
-    use \Oleonard\Lay\core\traits\Init;
-    use \Oleonard\Lay\core\traits\Config;
-    use \Oleonard\Lay\core\traits\Resources;
-    use \Oleonard\Lay\core\traits\Includes;
+    use \BrickLayer\Lay\core\traits\IsSingleton;
+    use \BrickLayer\Lay\core\traits\Init;
+    use \BrickLayer\Lay\core\traits\Config;
+    use \BrickLayer\Lay\core\traits\Resources;
+    use \BrickLayer\Lay\core\traits\Includes;
 }

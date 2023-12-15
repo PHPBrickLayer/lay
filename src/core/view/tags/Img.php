@@ -1,19 +1,19 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\view\tags;
+namespace BrickLayer\Lay\core\view\tags;
 
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\view\enums\DomainType;
-use Oleonard\Lay\core\view\ViewBuilder;
-use Oleonard\Lay\core\view\ViewDomain;
-use Oleonard\Lay\core\view\ViewSrc;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\view\enums\DomainType;
+use BrickLayer\Lay\core\view\ViewBuilder;
+use BrickLayer\Lay\core\view\ViewDomain;
+use BrickLayer\Lay\core\view\ViewSrc;
 
 final class Img {
     private const ATTRIBUTES = [
         "alt" => "Page Image"
     ];
 
-    use Oleonard\Lay\core\view\tags\traits\Standard;
+    use \BrickLayer\Lay\core\view\tags\traits\Standard;
 
     public function class(string $class_name) : self {
         return $this->attr('class', $class_name);

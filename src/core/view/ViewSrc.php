@@ -1,31 +1,31 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\view;
+namespace BrickLayer\Lay\core\view;
 
-use Oleonard\Lay\core\LayConfig;
+use BrickLayer\Lay\core\LayConfig;
 
 final class ViewSrc {
     public static function gen(string $src) : string {
-        $client = LayConfig::res_client();
-        $base = LayConfig::site_data()->base;
+        $client = ViewDomainResources::get();
+        $base = $client->domain->domain_base;
         
         $src = str_replace(
             [
-                "@#/",
-                "@front/",          "@back/",       "@custom/",
-                "@front_js/",       "@back_js/",    "@custom_js/",
-                "@front_img/",      "@back_img/",   "@custom_img/",
-                "@front_css/",      "@back_css/",   "@custom_css/",
+                "@shared/",             "@#/",              "@static/",
+                "@shared_js/",          "@js/",
+                "@shared_img/",         "@img/",
+                "@shared_css/",         "@css/",
             ],
             [
-                $client->root,
-                $client->front->root, $client->back->root, $client->custom->root,
-                $client->front->js, $client->back->js, $client->custom->js,
-                $client->front->img, $client->back->img, $client->custom->img,
-                $client->front->css, $client->back->css, $client->custom->css,
+                $client->shared->root,  $client->root,      $client->static_root,
+                $client->shared->js,    $client->js,
+                $client->shared->img,   $client->img,
+                $client->shared->css,   $client->css,
             ],
             $src
         );
+
+        $base = $client->domain->domain_uri;
 
         if(!str_starts_with($src, $base))
             return $src;

@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\traits;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\libs\LayObject;
+namespace BrickLayer\Lay\core\traits;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\core\view\ViewDomainResources;
+use BrickLayer\Lay\libs\LayObject;
 
 trait Includes {
     private static array $INC_VARS = ["META" => null];
@@ -29,7 +30,7 @@ trait Includes {
         $GLOBALS['local_array'] = $local_array;
         $GLOBALS['view'] = $view;
 
-        $layConfig = self::instance();
+        $layConfig = self::new();
         ob_start(); include $file_location; return ob_get_clean();
     }
 
@@ -62,61 +63,29 @@ trait Includes {
         return $route[0] ?? $route['root'];
     }
 
-    public function inc_file(?string $file, string $type = "inc", bool $once = true, bool $strict = true, ?array $vars = []) : ?string {
+    public function inc_file(?string $file, string $type = "inc", bool $once = true, ?array $vars = []) : ?string {
         self::is_init();
-        $using_custom_route = false;
         $slash = DIRECTORY_SEPARATOR;
 
-        $server = self::res_server();
-        $inc_root = $server->inc;
-        $view_root = $server->view;
+        $domain = ViewDomainResources::get()->domain;
+        $inc_root = $domain->layout;
+        $view_root = $domain->plaster;
         $type_loc = $inc_root;
 
-        $default_routes = fn($side) => [
-            "inc_$side" => [
-                'root' => $inc_root . "__$side" . $slash,
-                'ext' => ".inc"
-            ],
-            "view_$side" => [
-                'root' => $view_root . "__$side" . $slash,
-                'ext' => ".view"
-            ],
-        ];
-
-        if(self::$DEFAULT_ROUTE_SET === false && self::$USE_DEFAULT_ROUTE) {
-            self::$DEFAULT_ROUTE_SET = true;
-
-            self::$INC_CUSTOM_ROUTE = array_merge(
-                self::$INC_CUSTOM_ROUTE,
-                $default_routes('back'),
-                $default_routes('front')
-            );
+        switch ($type) {
+            default:
+                $type_loc = $inc_root;
+                $type = ".inc";
+                break;
+            case "view":
+                $type_loc = $view_root;
+                $type = ".view";
+                break;
         }
-
-        foreach (self::$INC_CUSTOM_ROUTE as $k => $v){
-            if($type != $k) continue;
-
-            $using_custom_route = true;
-            $type_loc = $v['root'];
-            $type = $v['ext'] ?? ".inc";
-            break;
-        }
-
-        if(!$using_custom_route)
-            switch ($type) {
-                default:
-                    $type_loc = $inc_root;
-                    $type = ".inc";
-                    break;
-                case "view":
-                    $type_loc = $view_root;
-                    $type = ".view";
-                    break;
-            }
 
         $file = $type_loc . $file . $type;
         $var = array_replace_recursive($vars, array_replace_recursive(self::get_inc_vars(), $vars));
-        $obj = LayObject::instance();
+        $obj = LayObject::new();
 
         $meta = $var['META'] ?? [];
         $local = $var['LOCAL'] ?? [];
@@ -125,7 +94,7 @@ trait Includes {
         $meta = $obj->to_object($meta);
         $local = $obj->to_object($local);
 
-        if(!file_exists($file) && $strict)
+        if(!file_exists($file))
             Exception::throw_exception("execution Failed trying to include file ($file)","FileNotFound");
 
         if(isset($vars['INCLUDE_AS_STRING']) && $vars['INCLUDE_AS_STRING'])

@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\core\traits;
+namespace BrickLayer\Lay\core\traits;
 
 use Closure;
-use Oleonard\Lay\core\Exception;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\libs\LayMail;
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\core\Exception;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\libs\LayMail;
+use BrickLayer\Lay\orm\SQL;
 use mysqli;
 use TypeError;
 
@@ -21,6 +21,30 @@ trait Config
     private static bool $USE_DEFAULT_ROUTE = true;
     private static bool $COMPRESS_HTML;
     private static string $SESSION_KEY = "__LAY_VARS__";
+
+    private function header_data(string $key, mixed $value): self
+    {
+        self::$layConfigOptions['header'][$key] = $value;
+        return self::$instance;
+    }
+
+    private function metadata(string $key, mixed $value): self
+    {
+        self::$layConfigOptions['meta'][$key] = $value;
+        return self::$instance;
+    }
+
+    public function init_others(array $other_data): self
+    {
+        self::$layConfigOptions['others'] = $other_data;
+        return self::$instance;
+    }
+
+    private function switch(string $key, mixed $value): self
+    {
+        self::$layConfigOptions['switch'][$key] = $value;
+        return self::$instance;
+    }
 
     public static function session_start(array $flags = []): void
     {
@@ -108,12 +132,6 @@ trait Config
 
     }
 
-    public static function get_env(): string
-    {
-        self::is_init();
-        return strtoupper(self::$ENV);
-    }
-
     public static function set_smtp(): void
     {
         if (isset(self::$SMTP_ARRAY))
@@ -128,7 +146,7 @@ trait Config
             if (str_starts_with($value, $code)) {
                 $value = explode($code, $value);
                 $value = end($value);
-                $value = eval("return \Oleonard\Lay\core\LayConfig{$value};");
+                $value = eval("return \BrickLayer\Lay\core\LayConfig{$value};");
             }
 
             return $value;
@@ -190,25 +208,9 @@ trait Config
         return $this->switch("compress_html", false);
     }
 
-    private function switch(string $key, mixed $value): self
-    {
-        self::$layConfigOptions['switch'][$key] = $value;
-        return self::$instance;
-    }
-
     public function dont_use_prod_folder(): self
     {
         return $this->switch("use_prod", false);
-    }
-
-    public function dont_use_https(): self
-    {
-        return $this->switch("use_https", false);
-    }
-
-    public function dont_use_default_inc_routes(): self
-    {
-        return $this->switch("default_inc_routes", false);
     }
 
     public function dont_use_objects(): self
@@ -226,33 +228,17 @@ trait Config
         return $this->switch("cache_domains", false);
     }
 
-    public function dont_cache_views(): self
+    public function set_global_api(string $uri): self
     {
-        return $this->switch("cache_views", false);
+        return $this->header_data("api", $uri);
     }
 
-    public function set_env(string $env = "dev"): self
-    {
-        return $this->header_data("env", $env);
-    }
-
-    private function header_data(string $key, mixed $value): self
-    {
-        self::$layConfigOptions['header'][$key] = $value;
-        return self::$instance;
-    }
-
+    
     public function init_name(string $short, string $full): self
     {
         return $this->metadata("name", ["short" => $short, "full" => $full]);
     }
-
-    private function metadata(string $key, mixed $value): self
-    {
-        self::$layConfigOptions['meta'][$key] = $value;
-        return self::$instance;
-    }
-
+    
     public function init_color(string $pry, string $sec): self
     {
         return $this->metadata("color", ["pry" => $pry, "sec" => $sec]);
@@ -282,13 +268,7 @@ trait Config
     {
         self::initialize();
     }
-
-    public function init_others(array $other_data): self
-    {
-        self::$layConfigOptions['others'] = $other_data;
-        return self::$instance;
-    }
-
+    
     public function is_mobile(): bool
     {
         return (bool)strpos(strtolower($_SERVER['HTTP_USER_AGENT'] ?? "cli"), "mobile");
@@ -406,7 +386,7 @@ trait Config
     public static function connect(?array $connection_params = null): SQL
     {
         self::is_init();
-        $env = self::$ENV;
+        $env = self::$ENV_IS_DEV ? 'dev' : 'prod';
 
         if (isset($connection_params['host']) || isset(self::$CONNECTION_ARRAY['host'])) {
             $opt = self::$CONNECTION_ARRAY ?? $connection_params;

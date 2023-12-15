@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\core\enums;
+namespace BrickLayer\Lay\core\enums;
 
 enum CustomContinueBreak : string
 {

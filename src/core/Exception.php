@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core;
+namespace BrickLayer\Lay\core;
 
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\orm\SQL;
 
 abstract class Exception {
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\core\view;
+namespace BrickLayer\Lay\core\view;
 
 abstract class ViewBuilderStarter
 {
@@ -24,6 +24,7 @@ abstract class ViewBuilderStarter
         if(!isset($this->builder))
             $this->builder = ViewBuilder::new();
 
+        ViewDomainResources::new()::init();
         $this->init_pages();
         $this->default();
         $this->pages();
@@ -74,7 +75,7 @@ abstract class ViewBuilderStarter
                     </style>
                     <h1><?= $meta['page']['title'] ?></h1>
                     <p>This is the default error page of Lay Framework</p>
-                    <a class="return" href="<?= \Oleonard\Lay\core\LayConfig::new()->get_site_data('base') ?>">Return Home</a>
+                    <a class="return" href="<?= \BrickLayer\Lay\core\LayConfig::new()->get_site_data('base') ?>">Return Home</a>
                 <?php });
         });
     }

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\orm\SQL;
 
 /**
  * Store session as cookie through accurate environment storage and encrypted storage token.

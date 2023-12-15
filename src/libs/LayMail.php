@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\libs;
+namespace BrickLayer\Lay\libs;
 
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\ExpectedValues;
-use Oleonard\Lay\core\LayConfig;
+use BrickLayer\Lay\core\LayConfig;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 
@@ -55,7 +55,7 @@ abstract class LayMail {
             self::$mail_link->Username   = self::$credentials['username'];
             self::$mail_link->Password   = self::$credentials['password'];
         }catch (\Exception $e){
-            \Oleonard\Lay\core\Exception::throw_exception("SMTP Credentials has not been setup. " . $e->getMessage(),"SMTPCredentialsError", stack_track: $e->getTrace());
+            \BrickLayer\Lay\core\Exception::throw_exception("SMTP Credentials has not been setup. " . $e->getMessage(),"SMTPCredentialsError", stack_track: $e->getTrace());
         }
 
     }
@@ -170,7 +170,7 @@ abstract class LayMail {
         $name = $this->client['name'] ?? null;
 
         if((empty($email) || empty($name)) && $this->to_client)
-            \Oleonard\Lay\core\Exception::throw_exception("Sending an email <b>to a client</b> with an empty `email`: [$email] or `name`: [$name] is not allowed!. If you wish to send to the server, use `->to_server()` method.", "EmptyRequiredField");
+            \BrickLayer\Lay\core\Exception::throw_exception("Sending an email <b>to a client</b> with an empty `email`: [$email] or `name`: [$name] is not allowed!. If you wish to send to the server, use `->to_server()` method.", "EmptyRequiredField");
 
         $server_mail_from = $this->server_from->mail ?? self::$credentials['default_sender_email'] ?? $site_data->mail->{0};
         $server_name_from = $this->server_from->name ?? self::$credentials['default_sender_name'] ?? $site_data->name->short;
@@ -196,12 +196,12 @@ abstract class LayMail {
         }
 
         if(@empty($this->subject))
-            \Oleonard\Lay\core\Exception::throw_exception("Sending an email with an empty `subject` is not allowed!", "EmptyRequiredField");
+            \BrickLayer\Lay\core\Exception::throw_exception("Sending an email with an empty `subject` is not allowed!", "EmptyRequiredField");
 
         self::$mail_link->Subject = $this->subject;
 
         if(@empty($this->body))
-            \Oleonard\Lay\core\Exception::throw_exception("Sending an email with an empty `body` is not allowed!", "EmptyRequiredField");
+            \BrickLayer\Lay\core\Exception::throw_exception("Sending an email with an empty `body` is not allowed!", "EmptyRequiredField");
 
         self::$mail_link->msgHTML($this->email_template($this->body));
 
@@ -229,7 +229,7 @@ abstract class LayMail {
                 );
             else {
                 if(!file_exists($this->attachment['filename']))
-                    \Oleonard\Lay\core\Exception::throw_exception("The file you're trying to attach does not exist", "AttachmentNotFound");
+                    \BrickLayer\Lay\core\Exception::throw_exception("The file you're trying to attach does not exist", "AttachmentNotFound");
 
                 self::$mail_link->addAttachment(
                     $this->attachment['filename'],
@@ -250,7 +250,7 @@ abstract class LayMail {
             return true;
 
         } catch (\Exception) {
-            \Oleonard\Lay\core\Exception::throw_exception(htmlspecialchars($recipient['to']) . ' LayMail.php' . self::$mail_link->ErrorInfo, "MailerError", false);
+            \BrickLayer\Lay\core\Exception::throw_exception(htmlspecialchars($recipient['to']) . ' LayMail.php' . self::$mail_link->ErrorInfo, "MailerError", false);
             // Reset the connection to abort sending this message
             // If Loop the loop will continue trying to send to the rest of the list
             self::$mail_link->getSMTPInstance()->reset();

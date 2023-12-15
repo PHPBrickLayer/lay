@@ -1,6 +1,6 @@
 <?php
 
-namespace Oleonard\Lay\core\view\enums;
+namespace BrickLayer\Lay\core\view\enums;
 
 enum DomainType : string
 {

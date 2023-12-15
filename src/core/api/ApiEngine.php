@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\core\api;
+namespace BrickLayer\Lay\core\api;
 
+use BrickLayer\Lay\core\view\ViewBuilder;
 use Closure;
-use Oleonard\Lay\core\api\enums\ApiRequestMethod;
-use Oleonard\Lay\core\Exception;
+use BrickLayer\Lay\core\api\enums\ApiRequestMethod;
+use BrickLayer\Lay\core\Exception;
 
 // TODO: Implement Middleware Handler
 final class ApiEngine {
@@ -306,8 +307,8 @@ final class ApiEngine {
      * @return self
      */
     public static function fetch() : self {
-        $endpoint = explode("/api/", $_SERVER['REQUEST_URI'], 2);
-        $endpoint = end($endpoint);
+        $req = ViewBuilder::new()->request("*");
+        $endpoint = $req['route'];
 
         if(empty($endpoint))
             self::exception("InvalidAPIRequest", "Invalid api request sent. Malformed URI received. You can't access this script like this!");
@@ -316,7 +317,7 @@ final class ApiEngine {
         self::$request_complete = false;
         self::$request_header = getallheaders();
         self::$request_uri_raw = $endpoint;
-        self::$request_uri = explode("/", rtrim($endpoint, "/"));
+        self::$request_uri = $req['route_as_array'];
 
         if(self::$request_uri[0] == "api")
             array_shift(self::$request_uri);

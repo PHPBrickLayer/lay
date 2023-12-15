@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\libs;
-use Oleonard\Lay\core\LayConfig;
-use Oleonard\Lay\core\traits\IsSingleton;
+namespace BrickLayer\Lay\libs;
+use BrickLayer\Lay\core\LayConfig;
+use BrickLayer\Lay\core\traits\IsSingleton;
 
 class LayGenId {
     use IsSingleton;

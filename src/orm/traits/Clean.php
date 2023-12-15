@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace Oleonard\Lay\orm\traits;
+namespace BrickLayer\Lay\orm\traits;
 
-use Oleonard\Lay\orm\SQL;
+use BrickLayer\Lay\orm\SQL;
 
 trait Clean {
     protected static array $stock_escape_string = ["%3D","%21","%2B","%40","%23","%24","%25","%5E","%26","%2A","%28","%29","%27",

@@ -1,5 +1,5 @@
 <?php
-namespace Oleonard\Lay\core\traits;
+namespace BrickLayer\Lay\core\traits;
 /**
  * Singleton Implementation
  */

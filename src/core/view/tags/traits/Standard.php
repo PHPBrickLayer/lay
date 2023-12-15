@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Oleonard\Lay\core\view\tags\traits;
+namespace BrickLayer\Lay\core\view\tags\traits;
 
 
-use Oleonard\Lay\core\enums\CustomContinueBreak;
+use BrickLayer\Lay\core\enums\CustomContinueBreak;
 
 trait Standard {
     private static self $me;
