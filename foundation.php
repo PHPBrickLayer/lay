@@ -2,7 +2,8 @@
 
 use BrickLayer\Lay\Core\LayConfig;
 
-include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bricklayer" . DIRECTORY_SEPARATOR . "lay" . DIRECTORY_SEPARATOR . "Autoloader.php";
+//include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bricklayer" . DIRECTORY_SEPARATOR . "structure" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Autoloader.php";
+include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" .  DIRECTORY_SEPARATOR . "autoload.php";
 
 LayConfig::validate_lay();
 
@@ -39,4 +40,5 @@ LayConfig::new()
             This is an awesome project that is about to unfold you just watch and see 😉.
         ",
     ])
-    ->init_orm(false);
+    ->init_orm(false)
+->init_end();

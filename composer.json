@@ -6,13 +6,17 @@
     }
   ],
   "scripts": {
+    "post-install-cmd": [
+      "php bob project:create"
+    ],
+
     "post-root-package-install": [
       "@php bob project:init"
     ]
   },
 
   "require": {
-    "php": "8.1",
+    "php": ">8.1",
     "bricklayer/structure": "dev-dev"
   },
   "require-dev": {

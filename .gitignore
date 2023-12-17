@@ -1,5 +1,5 @@
 /vendor/
-/res/uploads/
+/web/uploads/
 /.lay_temp/
 
 # Logs

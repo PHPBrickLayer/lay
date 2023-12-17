@@ -35,21 +35,9 @@ class Plaster extends ViewCast
         });
 
         $this->builder->route("another-page")->bind(function (ViewBuilder $builder) {
-            $builder->connect_db()
-                ->page("title", "Another Page")
+            $builder->page("title", "Another Page")
                 ->page("desc", "This is another page's description")
                 ->body("another");
-        });
-    }
-
-    public function default(): void
-    {
-        $this->builder->route($this->builder::DEFAULT_ROUTE)->bind(function (ViewBuilder $builder){
-            $builder->page('title', $this->builder->request('route') . " - Page not Found")
-                ->body_attr("defult-home")
-                ->local("current_page", "error")
-                ->local("section", "error")
-                ->body('error');
         });
     }
 }
