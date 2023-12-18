@@ -1,5 +1,4 @@
 <?php
-
 use BrickLayer\Lay\Core\View\Domain;
 
 const SAFE_TO_INIT_LAY = true;
@@ -12,6 +11,12 @@ Domain::new()->create(
     id: "api-endpoint",
     builder: new \web\domains\Api\Plaster(),
     patterns: ["api"],
+);
+
+Domain::new()->create(
+    id: "boardroom-id",
+    builder: new \web\domains\Boardroom\Plaster(),
+    patterns: ["boardroom"],
 );
 
 Domain::new()->create(
