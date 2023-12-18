@@ -11,11 +11,11 @@
     ],
 
     "post-update-cmd": [
-      "@php bob project:create --update"
+      "@php bob project:create --composer-update"
     ],
 
     "post-root-package-install": [
-      "@php bob project:create --fresh"
+      "@php bob project:create --update-lay-structure"
     ]
   },
 
