@@ -24,12 +24,8 @@ class Plaster extends ViewCast
                 ->page("title", "Homepage")
                 ->page("desc", "This is the default homepage description")
                 ->assets(
-                    "@shared_css/colors2.css",
-                    "@shared_js/colors.js",
-                    "@shared_css/colors3.css",
-                    "@shared_js/deee.js",
-                    "@shared_css/colors.css",
-                    "@shared_js/deee1.js",
+                    "@css/another.css",
+                    "@js/another2.js",
                 )
                 ->body("homepage");
         });
@@ -37,6 +33,10 @@ class Plaster extends ViewCast
         $this->builder->route("another-page")->bind(function (ViewBuilder $builder) {
             $builder->page("title", "Another Page")
                 ->page("desc", "This is another page's description")
+                ->assets(
+                    "@css/another.css",
+                    "@js/another2.js",
+                )
                 ->body("another");
         });
     }

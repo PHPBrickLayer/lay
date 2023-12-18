@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "post-install-cmd": [
-      "php bob project:create"
+      "@php bob project:create"
     ],
 
     "post-root-package-install": [

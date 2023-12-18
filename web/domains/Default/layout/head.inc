@@ -5,14 +5,8 @@ global $view;
 ?>
 
 <style>
-    body{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: #041039;
-        flex-flow: column;
-        font-size: 1.2rem;
+    h1 {
+        font-size: 2rem;
     }
 </style>
 
