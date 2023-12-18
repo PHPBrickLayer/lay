@@ -1,4 +1,10 @@
 {
+  "name": "bricklayer/lay",
+  "description": "A lite PHP builder meta-framework to get your projects up and running quickly",
+  "keywords": ["bricklayer", "lay", "php bricklayer", "lite php framework", "metaframework", "fast php framework"],
+  "type": "library",
+  "license": "GPL-3.0",
+
   "scripts": {
     "post-autoload-dump": [
       "@php bob project:create --composer-install-on-directory"
