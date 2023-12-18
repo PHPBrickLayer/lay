@@ -14,12 +14,6 @@ Domain::new()->create(
 );
 
 Domain::new()->create(
-    id: "boardroom-id",
-    builder: new \web\domains\Boardroom\Plaster(),
-    patterns: ["boardroom"],
-);
-
-Domain::new()->create(
     id: "default",
     builder: new \web\domains\Default\Plaster()
 );
