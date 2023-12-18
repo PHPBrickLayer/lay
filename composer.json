@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "post-autoload-dump": [
-      "@php bob project:create --new-project"
+      "@php bob project:create --composer-install-on-directory"
     ],
 
     "post-update-cmd": [
@@ -15,7 +15,10 @@
     ],
 
     "post-root-package-install": [
-      "@php bob project:create --update-lay-structure"
+      "@php bob project:create --update-lay-structure-on-existing-project"
+    ],
+    "post-create-project-cmd": [
+      "@php bob project:create --fresh-new-project"
     ]
   },
 
