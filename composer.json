@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "post-autoload-dump": [
-      "@php bob project:create"
+      "@php bob project:create --new-project"
     ],
 
     "post-update-cmd": [
