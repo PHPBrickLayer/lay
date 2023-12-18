@@ -14,9 +14,6 @@
       "@php bob project:create --composer-update"
     ],
 
-    "post-root-package-install": [
-      "@php bob project:create --update-lay-structure-on-existing-project"
-    ],
     "post-create-project-cmd": [
       "@php bob project:create --fresh-new-project"
     ]
