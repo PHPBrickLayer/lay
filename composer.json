@@ -6,12 +6,16 @@
     }
   ],
   "scripts": {
-    "post-install-cmd": [
+    "post-autoload-dump": [
       "@php bob project:create"
     ],
 
+    "post-update-cmd": [
+      "@php bob project:create --update"
+    ],
+
     "post-root-package-install": [
-      "@php bob project:init"
+      "@php bob project:create --fresh"
     ]
   },
 
