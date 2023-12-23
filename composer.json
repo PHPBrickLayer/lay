@@ -15,7 +15,7 @@
     ],
 
     "post-create-project-cmd": [
-      "@php bob project:create --fresh-new-project"
+      "@php bob project:create --fresh-project"
     ]
   },
 
