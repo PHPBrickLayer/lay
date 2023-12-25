@@ -9,13 +9,13 @@ use BrickLayer\Lay\Libs\LayObject;
 
 trait Helper {
     protected static function layConfig() : LayConfig {
-        return LayConfig::instance();
+        return LayConfig::new();
     }
     protected static function date(?string $datetime = null) : string {
         return LayDate::date($datetime);
     }
     protected static function get_json(bool $throw_error = true) : bool|null|object {
-        return LayObject::instance()->get_json($throw_error);
+        return LayObject::new()->get_json($throw_error);
     }
     protected static function cleanse (mixed &$value, float $level = 16, bool $strict = true){
         $strict = $strict ? "!" : "";
@@ -50,7 +50,7 @@ trait Helper {
         return false;
     }
     private static function upload_dir(bool $with_root = false) : string {
-        $lay = LayConfig::instance()->get_res__server();
+        $lay = LayConfig::server_data();
         $dir = $lay->upload;
 
         if($with_root)
@@ -60,9 +60,9 @@ trait Helper {
     }
     private static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800,800], bool $copy_tmp_file = false, int $quality = 80) : ?string {
         $dir = self::upload_dir() . $upload_sub_dir;
-        $root = LayConfig::new()->get_res__server('root');
+        $root = LayConfig::server_data()->root;
 
-        $x = LayImage::instance()->move([
+        $x = LayImage::new()->move([
             "post_name" => $post_name,
             "new_name" => self::cleanse($img_name,6,false),
             "directory" => $root . $dir,

@@ -13,7 +13,7 @@ class Email extends LayMail
     use IsSingleton;
     
     private static function email_btn(string $link, string $text) : string {
-        $color = LayConfig::new()->get_site_data('color','pry');
+        $color = LayConfig::site_data()->color->pry;
         return <<<BTN
             <span style="display: block; width: 100%; margin: 10px 0">
                 <a style="
@@ -96,7 +96,7 @@ class Email extends LayMail
             ->body(<<<MSG
                 <p>Hello {$data['name']},</p>
                 <p>You have placed a request to reset your password, please use the button below to complete the process.</p>
-                <div>{$btn}</div>
+                <div>$btn</div>
                 <p><b>Note:</b> This link is only valid for 30 minutes.</p>
                 <p>Thanks and Regards</p>
             MSG)

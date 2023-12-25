@@ -2,7 +2,6 @@
 
 use BrickLayer\Lay\Core\LayConfig;
 
-//include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bricklayer" . DIRECTORY_SEPARATOR . "structure" . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR . "Autoloader.php";
 include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" .  DIRECTORY_SEPARATOR . "autoload.php";
 
 LayConfig::validate_lay();
