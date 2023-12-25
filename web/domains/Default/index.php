@@ -1,5 +1,4 @@
 <?php
-
 use BrickLayer\Lay\Core\View\Domain;
 
 const DOMAIN_SET = true;
