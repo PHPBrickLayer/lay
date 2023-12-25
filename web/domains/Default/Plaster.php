@@ -1,5 +1,4 @@
 <?php
-
 namespace web\domains\Default;
 
 use BrickLayer\Lay\Core\View\DomainResource;
@@ -11,21 +10,19 @@ class Plaster extends ViewCast
     public function init_pages(): void
     {
         $this->builder->init_start()
-            ->body_attr("dark")
-            ->local("section", "app")
+            ->body_attr("dark", 'id="body-id"')
             ->local("logo", DomainResource::get()->shared->img_default->logo)
-            ->init_end();
+            ->local("section", "app")
+        ->init_end();
     }
 
     public function pages(): void
     {
         $this->builder->route("index")->bind(function (ViewBuilder $builder) {
-            $builder
-                ->page("title", "Homepage")
+            $builder->page("title", "Homepage")
                 ->page("desc", "This is the default homepage description")
                 ->assets(
                     "@css/another.css",
-                    "@js/another2.js",
                 )
                 ->body("homepage");
         });
@@ -35,7 +32,6 @@ class Plaster extends ViewCast
                 ->page("desc", "This is another page's description")
                 ->assets(
                     "@css/another.css",
-                    "@js/another2.js",
                 )
                 ->body("another");
         });

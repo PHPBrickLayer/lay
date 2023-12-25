@@ -15,5 +15,5 @@ Domain::new()->create(
 
 Domain::new()->create(
     id: "default",
-    builder: new \web\domains\Default\Plaster()
+    builder: new \web\domains\Default\Plaster(),
 );
