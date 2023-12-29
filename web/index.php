@@ -1,11 +1,10 @@
 <?php
 use BrickLayer\Lay\Core\View\Domain;
 
-const SAFE_TO_INIT_LAY = true;
-include_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "foundation.php";
+if(!defined("SAFE_TO_INIT_LAY"))
+    define("SAFE_TO_INIT_LAY", true);
 
-if(defined("DOMAIN_SET"))
-    return;
+include_once __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "foundation.php";
 
 Domain::new()->create(
     id: "api-endpoint",

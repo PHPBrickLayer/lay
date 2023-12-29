@@ -6,9 +6,9 @@ Options -Indexes
 RewriteEngine On
 
 <Files .htaccess>
-RewriteRule ^(.*)$ index.php [L,QSA]
+RewriteRule ^(.*)$ index.php?brick=$1 [L,QSA]
 Order allow,deny
 Deny from all
 </Files>
 
-RewriteRule ^(.*)$ index.php?u=$1 [L,QSA]
+RewriteRule ^(.*)$ index.php?brick=$1 [L,QSA]
