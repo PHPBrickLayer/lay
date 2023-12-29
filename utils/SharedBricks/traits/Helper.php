@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace utils\SharedBricks;
+namespace utils\SharedBricks\traits;
 
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\LayDate;
