@@ -4,7 +4,7 @@ namespace bricks\Newsletter\model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use utils\SharedBricks\interfaces\Module;
-use utils\SharedBricks\ModuleDefault;
+use utils\SharedBricks\traits\ModuleDefault;
 
 class Newsletter implements Module {
     use IsSingleton;

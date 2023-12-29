@@ -5,7 +5,7 @@ namespace bricks\Newsletter\controller;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use bricks\Newsletter\model\Newsletter;
 use utils\SharedBricks\Email;
-use utils\SharedBricks\Helper;
+use utils\SharedBricks\traits\Helper;
 
 class Newsletters
 {

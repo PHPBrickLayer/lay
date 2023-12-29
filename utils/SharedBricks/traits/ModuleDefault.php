@@ -1,6 +1,6 @@
 <?php
 
-namespace utils\SharedBricks;
+namespace utils\SharedBricks\traits;
 
 use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Orm\SQL;
