@@ -1,3 +1,3 @@
 <?php
 
-header("location: ../" . @$_GET['u']);
+header("location: ../" . @$_GET['brick']);
