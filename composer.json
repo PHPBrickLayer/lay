@@ -7,11 +7,11 @@
 
   "scripts": {
     "post-autoload-dump": [
-      "@php bob project:create --composer-install-on-directory"
+      "@php bob project:create --refresh-links"
     ],
 
     "post-update-cmd": [
-      "@php bob project:create --composer-update"
+      "@php bob project:create --refresh-links"
     ],
 
     "post-create-project-cmd": [
