@@ -21,7 +21,7 @@
 
   "require": {
     "php": ">8.1",
-    "bricklayer/structure": "^0.2-alpha",
+    "bricklayer/structure": "*",
     "ext-gd": "*"
   },
   "require-dev": {
