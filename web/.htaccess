@@ -111,4 +111,5 @@ RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^ %{REQUEST_URI}.php [L]
 
 # Default file for handling any other request uri
-RewriteRule ^(.*)$ index.php?brick=%{REQUEST_URI} [L,QSA]
+RewriteRule ^(.*)$ index.php?brick=%{REQUEST_URI} [QSA]
+RewriteRule ^index\.php/?brick=$ /$1 [L,R=301,NC]
