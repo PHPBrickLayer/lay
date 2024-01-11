@@ -1,6 +1,6 @@
 <?php
 
-namespace utils\SharedBricks\interfaces;
+namespace utils\SharedBricks\Interfaces;
 
 use BrickLayer\Lay\Orm\SQL;
 use JetBrains\PhpStorm\ArrayShape;

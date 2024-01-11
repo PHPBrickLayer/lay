@@ -4,7 +4,7 @@ namespace bricks\EndUser\controller;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use BrickLayer\Lay\Libs\LayObject;
-use utils\SharedBricks\Email;
+use utils\SharedBricks\Email\Email;
 
 class EndUsers
 {

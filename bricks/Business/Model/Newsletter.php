@@ -1,10 +1,10 @@
 <?php
 
-namespace bricks\Newsletter\model;
+namespace bricks\Business\Model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use utils\SharedBricks\interfaces\Module;
-use utils\SharedBricks\traits\ModuleDefault;
+use utils\SharedBricks\Interfaces\Module;
+use utils\SharedBricks\Traits\ModuleDefault;
 
 class Newsletter implements Module {
     use IsSingleton;
