@@ -4,6 +4,8 @@ $lay.page = {
     html : $id("LAY-HTML"),
     title : $id("LAY-PAGE-TITLE").content,
     title_full : $id("LAY-PAGE-TITLE-FULL").innerHTML,
+    domain : $attr($id("LAY-DOMAIN-NAME"),"content"),
+    domain_id : $attr($id("LAY-DOMAIN-ID"),"content"),
     desc : $attr($id("LAY-PAGE-DESC"),"content"),
     url : $attr($id("LAY-PAGE-URL"),"content"),
     urlFull : $attr($id("LAY-PAGE-FULL-URL"),"content"),
@@ -17,8 +19,10 @@ $lay.src = {
     serve : $id('LAY-API').value,
     shared_root : $id('LAY-SHARED-ROOT').value,
     shared_img : $id('LAY-SHARED-IMG').value,
+    shared_env : $id('LAY-SHARED-ENV').value,
+    static_img : $id('LAY-STATIC-IMG').value,
+    static_env : $id('LAY-STATIC-ENV').value,
     domain_root : $id('LAY-DOMAIN-ROOT').value,
-    domain_img : $id('LAY-DOMAIN-IMG').value,
     uploads : $id("LAY-UPLOAD").value,
 }
 $lay.fn = {
