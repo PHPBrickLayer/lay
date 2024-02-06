@@ -22,6 +22,9 @@ interface Module {
     #[ArrayShape(["code" => "int", "msg" => "string", "data" => "array", "error" => "bool"])]
     public function get_by(string $where) : array;
 
+    #[ArrayShape(["code" => "int", "msg" => "string", "data" => "array", "error" => "bool"])]
+    public function get_by_list(string $where) : array;
+
     #[ArrayShape(["code" => "int", "msg" => "string", "data" => "bool", "error" => "bool"])]
     public function edit(string $id, array $columns) : array;
 
