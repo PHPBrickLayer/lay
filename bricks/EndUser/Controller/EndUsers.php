@@ -1,6 +1,6 @@
 <?php
 
-namespace bricks\EndUser\controller;
+namespace bricks\EndUser\Controller;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use BrickLayer\Lay\Libs\LayObject;
