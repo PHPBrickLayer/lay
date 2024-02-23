@@ -59,6 +59,15 @@ trait ModuleDefault {
         );
     }
 
+    #[ArrayShape(["code" => "int", "msg" => "string", "data" => "array"])]
+    public function get_by_list(string $where) : array {
+        return $this->return_execution(
+            self::orm(self::$table)
+                ->where("deleted=0 AND ($where)")
+                ->loop()->then_select()
+        );
+    }
+
     #[ArrayShape(["code" => "int", "msg" => "string", "data" => "bool", "error" => "bool"])]
     public function edit(string $id, array $columns) : array {
         return $this->return_execution(
