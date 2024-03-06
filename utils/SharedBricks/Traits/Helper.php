@@ -8,9 +8,6 @@ use BrickLayer\Lay\Libs\LayImage;
 use BrickLayer\Lay\Libs\LayObject;
 
 trait Helper {
-    protected static function layConfig() : LayConfig {
-        return LayConfig::new();
-    }
     protected static function date(?string $datetime = null) : string {
         return LayDate::date($datetime);
     }
@@ -33,8 +30,10 @@ trait Helper {
 
     protected static function required_post_missing(object $post_object, array $post_names) : ?string {
         foreach ($post_names as $p){
-            if(empty(@$post_object->{$p}))
-                return $p . " cannot be empty. $p is required!";
+            if(empty(@$post_object->{$p})) {
+                $p = "<b>" . ucwords(str_replace("_", " ", $p)) . "</b>";
+                return "$p cannot be empty. $p is required!";
+            }
         }
 
         return null;
