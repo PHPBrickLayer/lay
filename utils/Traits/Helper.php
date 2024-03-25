@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace utils\SharedBricks\Traits;
+namespace utils\Traits;
 
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;

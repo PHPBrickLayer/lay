@@ -1,11 +1,11 @@
 <?php
 
-namespace utils\SharedBricks\Interfaces;
+namespace utils\Interfaces;
 
 use BrickLayer\Lay\Orm\SQL;
 use JetBrains\PhpStorm\ArrayShape;
 
-interface Module {
+interface Model {
     public function uuid() : string;
 
     public static function orm(?string $table = null) : SQL;

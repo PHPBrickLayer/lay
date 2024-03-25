@@ -1,6 +1,6 @@
 <?php
 
-namespace utils\SharedBricks\ApiHelper;
+namespace utils\ApiHelper;
 
 use BrickLayer\Lay\Core\Api\ApiEngine;
 

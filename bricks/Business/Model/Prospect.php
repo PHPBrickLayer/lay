@@ -4,13 +4,13 @@ declare(strict_types=1);
 namespace bricks\Business\Model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use utils\SharedBricks\Interfaces\Module;
-use utils\SharedBricks\Traits\ModuleDefault;
+use utils\Interfaces\Model;
+use utils\Traits\ModelDefault;
 
-class Prospect implements Module
+class Prospect implements Model
 {
     use IsSingleton;
-    use ModuleDefault;
+    use ModelDefault;
 
     public static string $table = "prospects";
 
