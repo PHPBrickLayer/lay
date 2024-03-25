@@ -6,12 +6,34 @@ use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use bricks\Business\Model\Prospect;
 use utils\SharedBricks\Email;
-use utils\SharedBricks\Traits\Helper;
+use utils\Traits\Helper;
 
 class Prospects
 {
     use IsSingleton;
     use Helper;
+
+    private static function model(): Prospect
+    {
+        return Prospect::new();
+    }
+
+    public function contact_us() : array {
+        $post = self::get_json();
+
+        if(
+            \utils\Email\Email::new()
+                ->client($post->email, $post->name)
+                ->subject("Enquiry: " . $post->subject)
+                ->body($post->message)
+                ->to_server()
+        )
+            return self::resolve( 1,
+                "Your enquiry has been sent and a response will be given accordingly, please ensure to check your email for a response"
+            );
+
+        return self::resolve();
+    }
 
     public function add(): array
     {
@@ -70,11 +92,6 @@ class Prospects
             ->to_server();
 
         return self::resolve(1, "Your request has been placed successfully. We will surely get back to you within 2 business working days. Thank you and best regards.");
-    }
-
-    private static function model(): Prospect
-    {
-        return Prospect::new();
     }
 
     private function edit(string $id, array $body): array

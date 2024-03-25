@@ -3,12 +3,12 @@
 namespace bricks\Business\Model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use utils\SharedBricks\Interfaces\Module;
-use utils\SharedBricks\Traits\ModuleDefault;
+use utils\Interfaces\Model;
+use utils\Traits\ModelDefault;
 
-class Newsletter implements Module {
+class Newsletter implements Model {
     use IsSingleton;
-    use ModuleDefault;
+    use ModelDefault;
 
     public static string $table = "newsletters";
 

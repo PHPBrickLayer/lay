@@ -4,8 +4,8 @@ namespace bricks\Business\Controller;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use bricks\Business\Model\Newsletter;
-use utils\SharedBricks\Email\Email;
-use utils\SharedBricks\Traits\Helper;
+use utils\Email\Email;
+use utils\Traits\Helper;
 
 class Newsletters
 {

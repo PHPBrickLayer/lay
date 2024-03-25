@@ -1,7 +1,7 @@
 <?php
 
 
-namespace utils\SharedBricks\Email;
+namespace utils\Email;
 
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Core\Traits\IsSingleton;

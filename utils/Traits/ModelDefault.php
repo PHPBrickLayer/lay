@@ -1,12 +1,12 @@
 <?php
 
-namespace utils\SharedBricks\Traits;
+namespace utils\Traits;
 
 use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Orm\SQL;
 use JetBrains\PhpStorm\ArrayShape;
 
-trait ModuleDefault {
+trait ModelDefault {
 
     public function uuid() : string {
         return self::orm()->uuid();
