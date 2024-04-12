@@ -1,5 +1,5 @@
 <?php
 
-\BrickLayer\Lay\core\view\tags\Link::new()->rel("stylesheet")->href("@css/style.css");
+\BrickLayer\Lay\Core\View\Tags\Link::new()->rel("stylesheet")->href("@css/style.css");
 
-echo \BrickLayer\Lay\core\view\DomainResource::plaster()->head;
+echo \BrickLayer\Lay\Core\View\DomainResource::plaster()->head;

@@ -1,2 +1,2 @@
 <?php
-echo \BrickLayer\Lay\core\view\DomainResource::plaster()->body;
+echo \BrickLayer\Lay\Core\View\DomainResource::plaster()->body;
