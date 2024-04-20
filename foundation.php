@@ -35,7 +35,7 @@ LayConfig::new()
     ->init_mail("EMAIL-1", "EMAIL-2")
     ->init_tel("TEL-1", "TEL-2")
     ->init_author("PHP BrickLayer - Lay")
-    ->init_copyright("@copy " . date('Y') . "; All rights reserved <a href='https://lay.osaitech.dev'>PHP Bricklayer - Lay</a>")
+    ->init_copyright("&copy; " . date('Y') . "; All rights reserved <a href='https://lay.osaitech.dev'>PHP Bricklayer - Lay</a>")
     ->init_others([
         "desc" => "
             This is an awesome project that is about to unfold you just watch and see 😉.
