@@ -103,4 +103,13 @@ trait Helper
         // return s3 copy
         return LayConfig::site_data()->others->uploads_domain . $url;
     }
+
+    public static function rm_img(string $file_name) : void
+    {
+        if (LayConfig::$ENV_IS_DEV)
+            return;
+
+        $file_name = str_replace(LayConfig::site_data()->others->uploads_domain, "", $file_name);
+        (new Bucket())->rm_file($file_name);
+    }
 }
