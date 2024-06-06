@@ -33,11 +33,13 @@ Options -Indexes
   <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font.css|css)$">
     Header set Access-Control-Allow-Origin "*"
     Header set Cache-Control "max-age=31536000, public"
+    Header unset Pragma
   </FilesMatch>
 
   # Cache static assets for 1 year
   <FilesMatch "\.(js|css|jpg|png|webp|jpeg|)$">
     Header set Cache-Control "max-age=31536000, public"
+    Header unset Pragma
   </FilesMatch>
 
   # Hide PHP X-powered header
