@@ -4,7 +4,7 @@ namespace utils\Middlewares\Customer;
 
 use BrickLayer\Lay\Core\Api\ApiEngine;
 
-abstract class PreHook
+abstract class Prefix
 {
     public static function run(ApiEngine $instance) : ApiEngine
     {
