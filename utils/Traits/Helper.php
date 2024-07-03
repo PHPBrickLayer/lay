@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace utils\Traits;
 
+use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;
 use BrickLayer\Lay\Libs\LayDate;
@@ -11,7 +12,7 @@ use BrickLayer\Lay\Libs\LayObject;
 
 trait Helper
 {
-    public static function resolve(int $code = 0, ?string $message = null, ?array $data = null): array
+    public static function resolve(int $code = ApiStatus::CONFLICT->value, ?string $message = null, ?array $data = null): array
     {
         return [
             "code" => $code,
