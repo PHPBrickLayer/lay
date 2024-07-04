@@ -3,15 +3,18 @@ declare(strict_types=1);
 
 namespace utils\Traits;
 
+use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;
 use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Libs\LayImage;
 use BrickLayer\Lay\Libs\LayObject;
+use BrickLayer\Lay\Libs\String\Enum\EscapeType;
+use BrickLayer\Lay\Libs\String\Escape;
 
 trait Helper
 {
-    public static function resolve(int $code = 0, ?string $message = null, ?array $data = null): array
+    public static function resolve(int $code = ApiStatus::CONFLICT->value, ?string $message = null, ?array $data = null): array
     {
         return [
             "code" => $code,
@@ -48,10 +51,9 @@ trait Helper
         return $dir;
     }
 
-    protected static function cleanse(mixed &$value, float $level = 16, bool $strict = true)
+    protected static function cleanse(mixed &$value, EscapeType $type = EscapeType::STRIP_TRIM_ESCAPE, bool $strict = true)
     {
-        $strict = $strict ? "!" : "";
-        $value = $value ? LayConfig::get_orm()->clean($value, $level, $strict) : "";
+        $value = $value ? Escape::clean($value, $type, ["strict" => $strict]) : "";
         return $value;
     }
 
