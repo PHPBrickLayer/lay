@@ -80,7 +80,7 @@ trait Helper
 
         $x = LayImage::new()->move([
             "post_name" => $post_name,
-            "new_name" => self::cleanse($img_name, 6, false),
+            "new_name" => self::cleanse($img_name, EscapeType::P_URL),
             "directory" => $root . $dir,
             "permission" => 0755,
             "dimension" => $dimension,
