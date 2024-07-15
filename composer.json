@@ -10,10 +10,6 @@
       "@php bob project:create --refresh-links"
     ],
 
-    "post-update-cmd": [
-      "@php bob project:create --refresh-links"
-    ],
-
     "post-create-project-cmd": [
       "@php bob project:create --fresh-project"
     ]
