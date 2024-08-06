@@ -11,7 +11,7 @@ class Email extends LayMail
 {
     use IsSingleton;
 
-    private static function email_btn(string $link, string $text): string
+    public static function email_btn(string $link, string $text): string
     {
         $color = LayConfig::site_data()->color->pry;
         return <<<BTN
