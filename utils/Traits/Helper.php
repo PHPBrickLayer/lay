@@ -14,8 +14,10 @@ use BrickLayer\Lay\Libs\String\Escape;
 
 trait Helper
 {
-    public static function resolve(int $code = ApiStatus::CONFLICT->value, ?string $message = null, ?array $data = null): array
+    public static function resolve(int|ApiStatus $code = 409, ?string $message = null, ?array $data = null): array
     {
+        $code = is_int($code) ? $code : $code->value;
+
         return [
             "code" => $code,
             "msg" => $message ?? "Request could not be processed at the moment, please try again later",
