@@ -10,11 +10,11 @@ class Plaster extends ApiHooks
     public function hooks(): void
     {
         if(LayConfig::is_bot())
-            $this->request::set_response_header(ApiStatus::NOT_ACCEPTABLE);
+            $this->engine::set_response_header(ApiStatus::NOT_ACCEPTABLE);
 
-        $this->request->set_version("v1");
+        $this->engine->set_version("v1");
 
-        $this->request->group_limit(60, "1 minute");
+        $this->engine->group_limit(60, "1 minute");
         $this->load_brick_hooks();
     }
 }
