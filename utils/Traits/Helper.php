@@ -6,6 +6,7 @@ namespace utils\Traits;
 use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;
+use BrickLayer\Lay\Libs\Image\ImageLib;
 use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Libs\LayImage;
 use BrickLayer\Lay\Libs\LayObject;
@@ -75,37 +76,46 @@ trait Helper
         return LayObject::new()->get_json($throw_error);
     }
 
-    private static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800, 800], bool $copy_tmp_file = false, int $quality = 80): ?string
+    private static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800, 800], bool $copy_tmp_file = false, int $quality = 80, ?int $file_limit = 2200000): array
     {
         $dir = self::upload_dir() . $upload_sub_dir;
         $root = LayConfig::server_data()->root . "web" . DIRECTORY_SEPARATOR;
 
-        $x = LayImage::new()->move([
+        $file = ImageLib::new()->move([
             "post_name" => $post_name,
             "new_name" => self::cleanse($img_name, EscapeType::P_URL),
             "directory" => $root . $dir,
             "permission" => 0755,
             "dimension" => $dimension,
             "quality" => $quality,
-            "copy_tmp_file" => $copy_tmp_file
+            "copy_tmp_file" => $copy_tmp_file,
+            "file_limit" => $file_limit
         ]);
 
-        if (!$x)
-            return null;
+        if (!$file['uploaded'])
+            return $file;
 
-        $url = rtrim($dir, DIRECTORY_SEPARATOR . "/") . "/" . $x;
+        $url = rtrim($dir, DIRECTORY_SEPARATOR . "/") . "/" . $file['url'];
 
-        if (LayConfig::$ENV_IS_DEV)
-            return $url;
+        if (LayConfig::$ENV_IS_DEV) {
+            $file['url'] = $url;
+            return $file;
+        }
 
-        if ((new Bucket())->upload($root . $dir . DIRECTORY_SEPARATOR . $x, $url)['statusCode'] != 200)
-            return $x;
+        $url = str_replace("uploads/", "", $url);
+
+        if ((new Bucket())->upload($root . $dir . DIRECTORY_SEPARATOR . $file['url'], $url)['statusCode'] != 200) {
+            $file['url'] = $url;
+            return $file;
+        }
 
         // delete local copy
-        unlink($root . $dir . DIRECTORY_SEPARATOR . $x);
+        unlink($root . $dir . DIRECTORY_SEPARATOR . $file['url']);
 
         // return s3 copy
-        return LayConfig::site_data()->others->uploads_domain . $url;
+        $file['url'] = LayConfig::site_data()->others->uploads_domain . $url;
+
+        return $file;
     }
 
     public static function rm_img(string $file_name) : void
