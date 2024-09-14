@@ -1,12 +1,12 @@
 <?php
 
-namespace bricks\Business\Controller;
+namespace Bricks\Business\Controller;
 
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use bricks\Business\Model\Prospect;
+use Bricks\Business\Model\Prospect;
+use Utils\Traits\Helper;
 use utils\SharedBricks\Email;
-use utils\Traits\Helper;
 
 class Prospects
 {
@@ -22,7 +22,7 @@ class Prospects
         $post = self::get_json();
 
         if(
-            \utils\Email\Email::new()
+            \Utils\Email\Email::new()
                 ->client($post->email, $post->name)
                 ->subject("Enquiry: " . $post->subject)
                 ->body($post->message)
