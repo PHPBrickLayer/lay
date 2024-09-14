@@ -11,6 +11,7 @@ use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Libs\LayObject;
 use BrickLayer\Lay\Libs\String\Enum\EscapeType;
 use BrickLayer\Lay\Libs\String\Escape;
+use JetBrains\PhpStorm\ArrayShape;
 
 trait Helper
 {
@@ -76,6 +77,15 @@ trait Helper
         return LayObject::new()->get_json($throw_error);
     }
 
+    #[ArrayShape([
+        'uploaded' => 'bool',
+        'error' => 'string',
+        'error_type' => "BrickLayer\\Lay\\Libs\\Image\\Enums\\ImageErrorType",
+        'url' => 'string',
+        'size' => 'int',
+        'width' => 'int',
+        'height' => 'int',
+    ])]
     public static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800, 800], bool $copy_tmp_file = false, int $quality = 80, ?int $file_limit = 2200000): array
     {
         $dir = self::upload_dir() . $upload_sub_dir;
