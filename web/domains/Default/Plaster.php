@@ -1,5 +1,5 @@
 <?php
-namespace web\domains\Default;
+namespace Web\Default;
 
 use BrickLayer\Lay\Core\View\DomainResource;
 use BrickLayer\Lay\Core\View\ViewBuilder;

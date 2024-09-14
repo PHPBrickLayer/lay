@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace bricks\Business\Api;
+namespace Bricks\Business\Api;
 
 use BrickLayer\Lay\Core\Api\ApiHooks;
-use bricks\Business\Controller\Newsletters;
-use bricks\Business\Controller\Prospects;
+use Bricks\Business\Controller\Newsletters;
+use Bricks\Business\Controller\Prospects;
 
 class Hook extends ApiHooks
 {

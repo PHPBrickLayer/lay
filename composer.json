@@ -5,6 +5,15 @@
   "type": "library",
   "license": "GPL-3.0",
 
+  "autoload": {
+    "psr-4": {
+      "Bricks\\": "bricks/",
+      "Utils\\": "utils/",
+      "Web\\": "web/domains/"
+    }
+  },
+
+
   "scripts": {
     "post-autoload-dump": [
       "@php bob project:create --refresh-links"

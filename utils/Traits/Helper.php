@@ -1,20 +1,20 @@
 <?php
 declare(strict_types=1);
 
-namespace utils\Traits;
+namespace Utils\Traits;
 
 use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;
 use BrickLayer\Lay\Libs\Image\ImageLib;
 use BrickLayer\Lay\Libs\LayDate;
-use BrickLayer\Lay\Libs\LayImage;
 use BrickLayer\Lay\Libs\LayObject;
 use BrickLayer\Lay\Libs\String\Enum\EscapeType;
 use BrickLayer\Lay\Libs\String\Escape;
 
 trait Helper
 {
+
     public static function resolve(int|ApiStatus $code = 409, ?string $message = null, ?array $data = null): array
     {
         $code = is_int($code) ? $code : $code->value;
@@ -56,7 +56,7 @@ trait Helper
 
     protected static function cleanse(mixed &$value, EscapeType $type = EscapeType::STRIP_TRIM_ESCAPE, bool $strict = true)
     {
-        $value = $value ? Escape::clean($value, $type, ["strict" => $strict]) : "";
+        $value = $value ? Escape::clean($value, $type, ['strict' => $strict]) : "";
         return $value;
     }
 
@@ -76,7 +76,7 @@ trait Helper
         return LayObject::new()->get_json($throw_error);
     }
 
-    private static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800, 800], bool $copy_tmp_file = false, int $quality = 80, ?int $file_limit = 2200000): array
+    public static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800, 800], bool $copy_tmp_file = false, int $quality = 80, ?int $file_limit = 2200000): array
     {
         $dir = self::upload_dir() . $upload_sub_dir;
         $root = LayConfig::server_data()->root . "web" . DIRECTORY_SEPARATOR;

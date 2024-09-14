@@ -1,6 +1,6 @@
 <?php
 
-namespace utils\Traits;
+namespace Utils\Traits;
 
 use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Orm\SQL;

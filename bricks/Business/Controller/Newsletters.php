@@ -1,11 +1,11 @@
 <?php
 
-namespace bricks\Business\Controller;
+namespace Bricks\Business\Controller;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use bricks\Business\Model\Newsletter;
-use utils\Email\Email;
-use utils\Traits\Helper;
+use Bricks\Business\Model\Newsletter;
+use Utils\Email\Email;
+use Utils\Traits\Helper;
 
 class Newsletters
 {

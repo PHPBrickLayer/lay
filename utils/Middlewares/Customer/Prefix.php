@@ -1,6 +1,6 @@
 <?php
 
-namespace utils\Middlewares\Customer;
+namespace Utils\Middlewares\Customer;
 
 use BrickLayer\Lay\Core\Api\ApiEngine;
 

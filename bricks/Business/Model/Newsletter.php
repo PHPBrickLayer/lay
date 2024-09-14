@@ -1,10 +1,10 @@
 <?php
 
-namespace bricks\Business\Model;
+namespace Bricks\Business\Model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use utils\Interfaces\Model;
-use utils\Traits\ModelDefault;
+use Utils\Interfaces\Model;
+use Utils\Traits\ModelDefault;
 
 class Newsletter implements Model {
     use IsSingleton;

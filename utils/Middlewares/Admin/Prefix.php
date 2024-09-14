@@ -1,6 +1,6 @@
 <?php
 
-namespace utils\Middlewares\Admin;
+namespace Utils\Middlewares\Admin;
 
 use BrickLayer\Lay\Core\Api\ApiEngine;
 

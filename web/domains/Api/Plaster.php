@@ -1,5 +1,5 @@
 <?php
-namespace web\domains\Api;
+namespace Web\Api;
 
 use BrickLayer\Lay\Core\Api\ApiHooks;
 use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
