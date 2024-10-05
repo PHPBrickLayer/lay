@@ -5,9 +5,10 @@ namespace Utils\Email;
 
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use BrickLayer\Lay\Libs\LayMail;
+use BrickLayer\Lay\Core\View\DomainResource;
+use BrickLayer\Lay\Libs\Mail\Mailer;
 
-class Email extends LayMail
+class Email extends Mailer
 {
     use IsSingleton;
 
@@ -31,6 +32,33 @@ class Email extends LayMail
             </span>
         BTN;
 
+    }
+
+    public function email_template(string $message) : string {
+        $data = LayConfig::site_data();
+        $domain_res = DomainResource::get();
+        $logo = $domain_res->shared->img_default->logo;
+        $company_name = $data->name->short;
+        $copyright = $domain_res->copyright ?? $data->copy;
+        $text_color = "#000000";
+        $bg_color = "transparent";
+
+        return <<<MSG
+            <html lang="en"><body>
+                <div style="background: $bg_color; color: $text_color; padding: 20px; min-height: 400px; max-width: 80%; margin: auto">
+                    <div style="text-align: center; background: $bg_color; padding: 10px 5px">
+                        <img src="$logo" alt="$company_name Logo" style="max-width: 85%; padding: 10px 10px 0">
+                    </div>
+                    <div style="
+                        margin: 10px auto;
+                        padding: 15px 0;
+                        font-size: 16px;
+                        line-height: 1.6;
+                    ">$message</div>
+                    <p style="text-align: center; font-size: 12px">$copyright</p>
+                </div>
+            </body></html>
+        MSG;
     }
 
     public static function welcome_newsletter(array $data): ?bool

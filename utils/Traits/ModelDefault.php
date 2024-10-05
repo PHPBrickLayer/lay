@@ -14,7 +14,7 @@ trait ModelDefault {
 
     protected static function exists(string $where) : int {
         return self::orm(self::$table)
-            ->where("deleted=0 AND $where")
+            ->where("deleted=0 AND ($where)")
             ->count_row("id");
     }
 

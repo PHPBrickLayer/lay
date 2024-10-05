@@ -1,6 +1,7 @@
 /vendor/
 /web/uploads/
 /.lay/temp/
+/.lay/worker/
 *.lock
 
 # Logs
