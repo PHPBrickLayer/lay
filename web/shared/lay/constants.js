@@ -16,6 +16,7 @@ $lay.page = {
     routeArray : JSON.parse($id("LAY-ROUTE-AS-ARRAY").content),
 }
 $lay.src = {
+    host : $id("LAY-HOST").content,
     base : $id("LAY-PAGE-BASE").href,
     api : $id('LAY-API').content,
     serve : $id('LAY-API').content,
@@ -49,7 +50,15 @@ $lay.fn = {
         osNote(successMsg,"success")
         return true
     },
-    rowEntrySave: row => `<span style="display: none" class="d-none entry-row-info">${JSON.stringify(row).replace(/&quot;/g,'\\"')}</span>`,
+    rowEntrySave: row => `<span style="display: none" class="d-none entry-row-info">${
+        JSON.stringify(row)
+            .replace(/&quot;/g,'\\"')
+            .replace(/(<[^>]+>)/g, (match) => {
+                return match
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            })
+    }</span>`,
     /**
      * Activate the action buttons on a table automatically using the `table-actions` class
      * @param actionsObject
@@ -61,14 +70,12 @@ $lay.fn = {
                 actionsObject.then()
 
             let item = e.target;
-            let btn;
+            let btn = $in(item,".table-actions","top") ?? $in(item,".table-action","top");
 
             if(
-                !$class(item,"has","table-actions") && !$in(item,".table-actions","top") &&
-                !$class(item,"has","table-action") && !$in(item,".table-action","top")
+                !$class(item,"has","table-actions") && !$class(item,"has","table-action") && !btn
             ) return;
 
-            btn = item;
             e.preventDefault();
 
             $loop(actionsObject, (value, key) => {
@@ -112,13 +119,20 @@ $lay.fn = {
 
                             return new Function('', `return ${fn}`).call(this)
                         },
-                        info: !$sel(".entry-row-info", parentElement) ? "" : JSON.parse($html($sel(".entry-row-info", parentElement)))
+                        info: !$sel(".entry-row-info", parentElement) ? "" : JSON.parse(
+                            $html($sel(".entry-row-info", parentElement))
+                                .replace(/(&lt;[^&]+?&gt;)/g, (match) => {
+                                    return match
+                                        .replace(/&lt;/g, '<')
+                                        .replace(/&gt;/g, '>');
+                                })
+                        )
                     })
                 }
             })
         })
     },
-    currency : (num, currency = "USD",locale = "en-US") => {
+    currency : (num, currency = "NGN",locale = "en-NG") => {
         return new Intl.NumberFormat(locale,!currency ? {} : {
             style: "currency",
             currency: currency,

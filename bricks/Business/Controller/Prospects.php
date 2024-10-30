@@ -5,8 +5,8 @@ namespace Bricks\Business\Controller;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
 use Bricks\Business\Model\Prospect;
+use Utils\Email\Email;
 use Utils\Traits\Helper;
-use utils\SharedBricks\Email;
 
 class Prospects
 {
@@ -22,11 +22,11 @@ class Prospects
         $post = self::get_json();
 
         if(
-            \Utils\Email\Email::new()
+            Email::new()
                 ->client($post->email, $post->name)
                 ->subject("Enquiry: " . $post->subject)
                 ->body($post->message)
-                ->to_server()
+            ->to_server()
         )
             return self::resolve( 1,
                 "Your enquiry has been sent and a response will be given accordingly, please ensure to check your email for a response"
@@ -77,7 +77,7 @@ class Prospects
                 "body" => json_encode($body),
                 "created_by" => "END_USER",
                 "created_at" => $date,
-            ])['data']
+            ])
         )
             return self::resolve();
 
@@ -108,7 +108,7 @@ class Prospects
                 [
                     "body" => $body,
                 ]
-            )['data']
+            )
         )
             return self::resolve(1, "Your request has been placed successfully. This is not your first rodeo. We will surely get back to you within 2 business working days. Thank you and best regards.");
 
@@ -125,6 +125,6 @@ class Prospects
 
     public function list(): array
     {
-        return self::model()->get()['data'];
+        return self::model()->just_list();
     }
 }

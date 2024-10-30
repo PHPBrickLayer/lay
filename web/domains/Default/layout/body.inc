@@ -1,2 +1,10 @@
 <?php
-echo \BrickLayer\Lay\Core\View\DomainResource::plaster()->body;
+
+use BrickLayer\Lay\Core\View\DomainResource;
+
+echo DomainResource::plaster()->body;
+?>
+
+<div class="copyright">
+    <?= DomainResource::get()->copyright ?>
+</div>

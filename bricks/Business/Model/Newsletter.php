@@ -3,12 +3,11 @@
 namespace Bricks\Business\Model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use Utils\Interfaces\Model;
-use Utils\Traits\ModelDefault;
+use Utils\Traits\ModelHelper;
 
-class Newsletter implements Model {
+class Newsletter {
     use IsSingleton;
-    use ModelDefault;
+    use ModelHelper;
 
     public static string $table = "newsletters";
 

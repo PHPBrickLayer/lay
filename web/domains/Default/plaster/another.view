@@ -1,5 +1,5 @@
 <?php
-use BrickLayer\Lay\Core\View\DomainResource;
+use BrickLayer\Lay\core\view\DomainResource;
 $plaster = DomainResource::plaster();
 $href  = $plaster->local->href;
 ?>
