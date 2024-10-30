@@ -6,11 +6,16 @@ namespace Utils\Traits;
 use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;
+use BrickLayer\Lay\Libs\FileUpload\Enums\FileUploadExtension;
+use BrickLayer\Lay\Libs\FileUpload\Enums\FileUploadStorage;
+use BrickLayer\Lay\Libs\FileUpload\Enums\FileUploadType;
+use BrickLayer\Lay\Libs\FileUpload\FileUpload;
 use BrickLayer\Lay\Libs\Image\ImageLib;
 use BrickLayer\Lay\Libs\LayDate;
 use BrickLayer\Lay\Libs\LayObject;
 use BrickLayer\Lay\Libs\String\Enum\EscapeType;
 use BrickLayer\Lay\Libs\String\Escape;
+use JetBrains\PhpStorm\ArrayShape;
 
 trait Helper
 {
@@ -76,54 +81,70 @@ trait Helper
         return LayObject::new()->get_json($throw_error);
     }
 
-    public static function img_upload(string $post_name, string $img_name, ?string $upload_sub_dir = null, ?array $dimension = [800, 800], bool $copy_tmp_file = false, int $quality = 80, ?int $file_limit = 2200000): array
+    #[ArrayShape([
+        'uploaded' => 'bool',
+        'dev_error' => '?string',
+        'error' => '?string',
+        'error_type' => "?BrickLayer\\Lay\\Libs\\FileUpload\\Enums\\FileUploadErrors",
+        'upload_type' => "BrickLayer\\Lay\\Libs\\FileUpload\\Enums\\FileUploadType",
+        'storage' => "BrickLayer\\Lay\\Libs\\FileUpload\\Enums\\FileUploadStorage",
+        'url' => '?string',
+        'size' => '?int',
+        'width' => '?int',
+        'height' => '?int',
+    ])]
+    public static function handle_upload(
+        string $post_name,
+        string $new_name,
+        ?string $upload_sub_dir = null,
+        ?int $file_limit = 2200000,
+        ?FileUploadExtension $extension = null,
+        ?array $extension_list = null,
+        ?array $custom_mime = null,
+        ?array $dimension = [800, 800],
+        bool $copy_tmp_file = false,
+        int $quality = 80,
+        ?FileUploadType $upload_type = null
+    ): array
     {
         $dir = self::upload_dir() . $upload_sub_dir;
         $root = LayConfig::server_data()->root . "web" . DIRECTORY_SEPARATOR;
 
-        $file = ImageLib::new()->move([
+        $file = (new FileUpload([
             "post_name" => $post_name,
-            "new_name" => self::cleanse($img_name, EscapeType::P_URL),
+            "new_name" => self::cleanse($new_name, EscapeType::P_URL),
             "directory" => $root . $dir,
             "permission" => 0755,
+            "file_limit" => $file_limit,
+            "storage" => FileUploadStorage::BUCKET,
+            "bucket_path" => str_replace("uploads/", "", rtrim($dir, DIRECTORY_SEPARATOR . "/") . "/"),
+            "extension" => $extension,
+            "extension_list" => $extension_list,
+            "custom_mime" => $custom_mime,
             "dimension" => $dimension,
             "quality" => $quality,
+            "upload_type" => $upload_type,
             "copy_tmp_file" => $copy_tmp_file,
-            "file_limit" => $file_limit
-        ]);
+        ]))->response;
 
-        if (!$file['uploaded'])
+        if(!$file['uploaded'])
             return $file;
 
-        $url = rtrim($dir, DIRECTORY_SEPARATOR . "/") . "/" . $file['url'];
-
-        if (LayConfig::$ENV_IS_DEV) {
-            $file['url'] = $url;
-            return $file;
-        }
-
-        $url = str_replace("uploads/", "", $url);
-
-        if ((new Bucket())->upload($root . $dir . DIRECTORY_SEPARATOR . $file['url'], $url)['statusCode'] != 200) {
-            $file['url'] = $url;
-            return $file;
-        }
-
-        // delete local copy
-        unlink($root . $dir . DIRECTORY_SEPARATOR . $file['url']);
-
-        // return s3 copy
-        $file['url'] = LayConfig::site_data()->others->uploads_domain . $url;
+        if($file['storage'] == FileUploadStorage::BUCKET)
+            $file['url'] = LayConfig::site_data()->others->bucket_domain . $file['url'];
+        else
+            $file['url'] = rtrim($dir, DIRECTORY_SEPARATOR . "/") . "/" . $file['url'];
 
         return $file;
     }
 
-    public static function rm_img(string $file_name) : void
+    public static function rm_upload(string $file_name) : void
     {
         if (LayConfig::$ENV_IS_DEV)
             return;
 
-        $file_name = str_replace(LayConfig::site_data()->others->uploads_domain, "", $file_name);
+        $file_name = str_replace(LayConfig::site_data()->others->bucket_domain, "", $file_name);
+
         (new Bucket())->rm_file($file_name);
     }
 }

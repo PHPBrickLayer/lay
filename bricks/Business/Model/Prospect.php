@@ -4,19 +4,18 @@ declare(strict_types=1);
 namespace Bricks\Business\Model;
 
 use BrickLayer\Lay\Core\Traits\IsSingleton;
-use Utils\Interfaces\Model;
-use Utils\Traits\ModelDefault;
+use Utils\Traits\ModelHelper;
 
-class Prospect implements Model
+class Prospect
 {
     use IsSingleton;
-    use ModelDefault;
+    use ModelHelper;
 
     public static string $table = "prospects";
 
     public function is_exist(string $name, string $email) : ?array
     {
-        $data = self::get_by("`name`='$name' AND email='$email'")['data'];
+        $data = self::get_by("`name`='$name' AND email='$email'");
         return empty($data) ? null : $data;
     }
 }

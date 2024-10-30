@@ -14,7 +14,7 @@ class Newsletters
 
     public function list(): array
     {
-        return self::model()->get()['data'];
+        return self::model()->just_list();
     }
 
     private static function model(): Newsletter
@@ -47,7 +47,7 @@ class Newsletters
                 "name" => $post->name,
                 "created_by" => "END_USER",
                 "created_at" => self::date(),
-            ])['data']
+            ])
         )
             return self::resolve();
 

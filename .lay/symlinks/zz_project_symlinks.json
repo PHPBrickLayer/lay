@@ -1,0 +1,1 @@
+[{"type":"dir","src":"web\/domains\/Api","dest":"web\/domains\/Default\/api"},{"type":"htaccess","src":"","dest":"Default\/"},{"type":"dir","src":"web\/shared","dest":"web\/domains\/Default\/shared"}]
