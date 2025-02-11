@@ -18,7 +18,7 @@ class Plaster extends ViewCast
 
     public function pages(): void
     {
-        $this->builder->route("index")->bind(function (ViewBuilder $builder) {
+        $this->route("index")->bind(function (ViewBuilder $builder) {
             $builder->page("title", "Homepage")
                 ->page("desc", "This is the default homepage description")
                 ->assets(
@@ -27,7 +27,7 @@ class Plaster extends ViewCast
                 ->body("homepage");
         });
 
-        $this->builder->route("another-page")->bind(function (ViewBuilder $builder) {
+        $this->route("another-page")->bind(function (ViewBuilder $builder) {
             $builder->page("title", "Another Page")
                 ->page("desc", "This is another page's description")
                 ->assets(
