@@ -2,19 +2,20 @@
 
 namespace Bricks\Business\Controller;
 
+use BrickLayer\Lay\Core\Traits\ControllerHelper;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
+use BrickLayer\Lay\Core\Traits\ValidateCleanMap;
+use BrickLayer\Lay\Libs\LayDate;
 use Bricks\Business\Model\Newsletter;
 use Utils\Email\Email;
-use Utils\Traits\Helper;
 
 class Newsletters
 {
-    use IsSingleton;
-    use Helper;
+    use IsSingleton, ControllerHelper, ValidateCleanMap;
 
     public function list(): array
     {
-        return self::model()->just_list();
+        return self::model()->list_100();
     }
 
     private static function model(): Newsletter
@@ -24,38 +25,30 @@ class Newsletters
 
     public function add(): array
     {
-        if (!self::validate_captcha())
-            return self::resolve(0, "Invalid code received, please try again");
+        self::vcm_start(self::request())
+            ->vcm(['field' => 'name',])
+            ->vcm(['field' => 'email', 'required' => true, 'is_email' => true ]);
 
-        $post = self::get_json();
+        $post = self::vcm_end();
 
-        if ($p = self::required_post_missing($post, ['email']))
-            return self::resolve(2, $p);
+        if ($errors = self::vcm_errors(true))
+            return self::res_warning($errors);
 
 
-        self::cleanse($post->email);
+        if (self::model()->is_exist($post['email']))
+            return self::res_warning("You have already subscribed, don't worry you will begin to see great tips, offers and freebies from us. We only dish out the best content and we don't spam");
 
-        if (self::model()->is_exist($post->email))
-            return self::resolve(1, "You have already subscribed, don't worry you will begin to see great tips, offers and freebies from us. We only dish out the best content and we don't spam");
+        $post['created_by'] = "END_USER";
+        $post['created_at'] = LayDate::date();
 
-        self::cleanse($post->name);
+        if (!self::model()->add($post))
+            return self::res_error();
 
-        if (
-            !self::model()->add([
-                "id" => "UUID()",
-                "email" => $post->email,
-                "name" => $post->name,
-                "created_by" => "END_USER",
-                "created_at" => self::date(),
-            ])
-        )
-            return self::resolve();
-
-        Email::welcome_newsletter([
-            "name" => $post->name,
-            "email" => $post->email,
+        (new Email())->welcome_newsletter([
+            "name" => $post['name'],
+            "email" => $post['email'],
         ]);
 
-        return self::resolve(1, "Congratulations! You have successfully subscribed! We will get in touch with you  with the latest tips, tricks, offers and freebies. We only dish out quality content, we don't spam");
+        return self::res_success("Congratulations! You have successfully subscribed! We will get in touch with you  with the latest tips, tricks, offers and freebies. We only dish out quality content, we don't spam");
     }
 }

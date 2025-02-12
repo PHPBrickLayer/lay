@@ -4,14 +4,11 @@
 namespace Utils\Email;
 
 use BrickLayer\Lay\Core\LayConfig;
-use BrickLayer\Lay\Core\Traits\IsSingleton;
 use BrickLayer\Lay\Core\View\DomainResource;
 use BrickLayer\Lay\Libs\Mail\Mailer;
 
 class Email extends Mailer
 {
-    use IsSingleton;
-
     public static function email_btn(string $link, string $text): string
     {
         $color = LayConfig::site_data()->color->pry;
@@ -61,7 +58,7 @@ class Email extends Mailer
         MSG;
     }
 
-    public static function welcome_newsletter(array $data): ?bool
+    public function welcome_newsletter(array $data): ?bool
     {
         $site = LayConfig::site_data();
         $company = $site->name->short;
@@ -69,7 +66,7 @@ class Email extends Mailer
         $admin_name = $site->others->default_personnel['name'];
         $admin_post = $site->others->default_personnel['post'];
 
-        return self::new()
+        return $this
             ->subject("Welcome to $company Newsletter!")
             ->client($data['email'], $data['name'])
             ->body(<<<MSG
