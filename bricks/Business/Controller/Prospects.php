@@ -3,15 +3,17 @@
 namespace Bricks\Business\Controller;
 
 use BrickLayer\Lay\Core\LayConfig;
+use BrickLayer\Lay\Core\Traits\ControllerHelper;
 use BrickLayer\Lay\Core\Traits\IsSingleton;
+use BrickLayer\Lay\Core\Traits\ValidateCleanMap;
+use BrickLayer\Lay\Libs\LayDate;
+use BrickLayer\Lay\Libs\String\Enum\EscapeType;
 use Bricks\Business\Model\Prospect;
 use Utils\Email\Email;
-use Utils\Traits\Helper;
 
 class Prospects
 {
-    use IsSingleton;
-    use Helper;
+    use IsSingleton, ControllerHelper, ValidateCleanMap;
 
     private static function model(): Prospect
     {
@@ -19,48 +21,51 @@ class Prospects
     }
 
     public function contact_us() : array {
-        $post = self::get_json();
+        $post = self::request();
 
         if(
-            Email::new()
+            (new Email())
                 ->client($post->email, $post->name)
                 ->subject("Enquiry: " . $post->subject)
                 ->body($post->message)
-            ->to_server()
+                ->to_server()
         )
-            return self::resolve( 1,
+            self::res_success(
                 "Your enquiry has been sent and a response will be given accordingly, please ensure to check your email for a response"
             );
 
-        return self::resolve();
+        return self::res_error();
     }
 
     public function add(): array
     {
-        $post = self::get_json();
+        self::vcm_start(self::request())
+            ->vcm_rules([ 'required' => true ])
+            ->vcm([ 'is_captcha' => true, 'field' => 'captcha' ])
+            ->vcm([ 'field' => 'name' ])
+            ->vcm([ 'field' => 'email', 'is_email' => true ])
+            ->vcm([ 'field' => 'tel', 'is_num' => true, 'required' => false ])
+            ->vcm([ 'field' => 'subject' ])
+            ->vcm([ 'field' => 'message', 'clean' => [
+                'strict' => false,
+                'escape' => EscapeType::STRIP_TRIM_ESCAPE
+            ]]);
+        $post = self::vcm_end();
 
-        if (!self::validate_captcha())
-            return self::resolve(2, "Invalid captcha code received");
+        if ($errors = self::vcm_errors(true))
+            return self::res_warning($errors);
 
-        if ($p = self::required_post_missing($post, ['name', 'email', 'subject', 'message']))
-            return self::resolve(2, $p);
+        $date = LayDate::date();
 
-        $date = self::date();
-        self::cleanse($post->name);
-        self::cleanse($post->email);
-        self::cleanse($post->subject);
-        self::cleanse($post->tel, strict: false);
-
-        $message = nl2br($post->message);
-        self::cleanse($message, strict: false);
+        $message = nl2br($post['message']);
 
         $body = [
-            "subject" => $post->subject,
+            "subject" => $post['subject'],
             "body" => $message,
             "date" => $date,
         ];
 
-        if ($data = self::model()->is_exist($post->name, $post->email)) {
+        if ($data = self::model()->is_exist($post['name'], $post['email'])) {
 
             $data['body'] = @$data['body'] ? json_decode($data['body'], true) : [];
             $data['body'][] = $body;
@@ -68,30 +73,25 @@ class Prospects
             return $this->edit($data['id'], $data['body']);
         }
 
-        if (
-            !self::model()->add([
-                "id" => "UUID()",
-                "name" => $post->name,
-                "email" => $post->email,
-                "tel" => $post->tel ?? null,
-                "body" => json_encode($body),
-                "created_by" => "END_USER",
-                "created_at" => $date,
-            ])
-        )
-            return self::resolve();
+        $data = $post;
+        $data['body'] = json_encode($body);
+        $data['created_by'] = "END_USER";
+        $data['created_at'] = $date;
 
-        Email::new()
-            ->subject("Get Started: " . $post->subject)
-            ->body($post->message)
-            ->client($post->email, $post->name)
+        if (!self::model()->add($data))
+            return self::res_error();
+
+        (new Email())
+            ->subject("Get Started: " . $post['subject'])
+            ->body($post['message'])
+            ->client($post['email'], $post['name'])
             ->server(
                 LayConfig::site_data()->mail->{0},
                 "Hello @ Osai Tech"
             )
             ->to_server();
 
-        return self::resolve(1, "Your request has been placed successfully. We will surely get back to you within 2 business working days. Thank you and best regards.");
+        return self::res_success("Your request has been placed successfully. We will surely get back to you within 2 business working days. Thank you and best regards.");
     }
 
     private function edit(string $id, array $body): array
@@ -110,21 +110,13 @@ class Prospects
                 ]
             )
         )
-            return self::resolve(1, "Your request has been placed successfully. This is not your first rodeo. We will surely get back to you within 2 business working days. Thank you and best regards.");
+            return self::res_success("Your request has been placed successfully. This is not your first rodeo. We will surely get back to you within 2 business working days. Thank you and best regards.");
 
-        return self::resolve();
-    }
-
-    public function delete(?string $id = null): array
-    {
-        $id = $id ?? self::get_json()->id;
-        self::cleanse($id);
-
-        return self::resolve();
+        return self::res_error();
     }
 
     public function list(): array
     {
-        return self::model()->just_list();
+        return self::model()->list_100();
     }
 }
