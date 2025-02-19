@@ -4,6 +4,8 @@
 /.lay/worker/
 /.lay/identity
 *.lock
+*.sqlite
+*.db
 
 # Logs
 .logs
