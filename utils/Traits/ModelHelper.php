@@ -70,7 +70,7 @@ trait ModelHelper {
     {
         return self::orm(self::$table)->column($columns)
             ->no_false()
-            ->where("`id`='$record_id'")
+            ->where("id", $record_id)
             ->edit();
     }
 
@@ -80,6 +80,6 @@ trait ModelHelper {
             "deleted" => 1,
             "deleted_by" => $act_by,
             "deleted_at" => LayDate::date(),
-        ])->where("`id`='$record_id'")->edit();
+        ])->where("id", $record_id)->edit();
     }
 }

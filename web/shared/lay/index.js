@@ -3,7 +3,7 @@
  * @author Osahenrumwen Aigbogun
  * @version 2.0.0
  * @since 23/11/2019
- * @modified 25/03/2024
+ * @modified 13/02/2025
  * @license
  * Copyright (c) 2019 Osai LLC | osaitech.dev/about.
  *
@@ -343,22 +343,22 @@ const $get = (name, query = true) => {
     let urlComplete = origin + path;
     path = path.replace("/" + urlFileName, "");
     switch (name) {
-      case "origin":
-        return origin;
+        case "origin":
+            return origin;
 
-      case "path":
-      case "directory":
-        return path;
+        case "path":
+        case "directory":
+            return path;
 
-      case "file":
-      case "script":
-        return urlFileName;
+        case "file":
+        case "script":
+            return urlFileName;
 
-      case "hash":
-        return hash;
+        case "hash":
+            return hash;
 
-      default:
-        return urlComplete;
+        default:
+            return urlComplete;
     }
 };
 
@@ -393,27 +393,27 @@ const $media = ({srcElement: srcElement, previewElement: previewElement, then: t
     let previewMedia = srcElement => {
         let srcProcessed = [];
         switch (srcElement.type) {
-          default:
-            previewElement.src = srcElement.value !== "" ? srcElement.value : currentMediaSrc;
-            break;
+            default:
+                previewElement.src = srcElement.value !== "" ? srcElement.value : currentMediaSrc;
+                break;
 
-          case "file":
-            if (useReader) {
-                const reader = new FileReader;
-                $on(reader, "load", (() => {
-                    if (srcElement.value === "") return previewElement.src = currentMediaSrc;
-                    previewElement.src = reader.result;
-                    then && then(reader.result);
-                }), "on");
-                if (srcElement.files[0]) return reader.readAsDataURL(srcElement.files[0]);
-                previewElement.src = currentMediaSrc;
-            }
-            if (srcElement.multiple) return osNote("Media preview doesn't support preview for multiple files");
-            if (srcElement.value === "") return previewElement.src = currentMediaSrc;
-            srcProcessed = URL.createObjectURL(srcElement.files[0]);
-            previewElement.src = srcProcessed;
-            then && then(srcProcessed);
-            break;
+            case "file":
+                if (useReader) {
+                    const reader = new FileReader;
+                    $on(reader, "load", (() => {
+                        if (srcElement.value === "") return previewElement.src = currentMediaSrc;
+                        previewElement.src = reader.result;
+                        then && then(reader.result);
+                    }), "on");
+                    if (srcElement.files[0]) return reader.readAsDataURL(srcElement.files[0]);
+                    previewElement.src = currentMediaSrc;
+                }
+                if (srcElement.multiple) return osNote("Media preview doesn't support preview for multiple files");
+                if (srcElement.value === "") return previewElement.src = currentMediaSrc;
+                srcProcessed = URL.createObjectURL(srcElement.files[0]);
+                previewElement.src = srcProcessed;
+                then && then(srcProcessed);
+                break;
         }
     };
     if (!on) return previewMedia(srcElement);
@@ -521,17 +521,17 @@ const $overflow = element => element.scrollHeight > element.clientHeight || elem
 const $check = (value, type) => {
     if ($type(value) !== "String") return false;
     switch (type) {
-      case "name":
-        return !!new RegExp("^[a-z ,.'-]+/i$", value);
+        case "name":
+            return !!new RegExp("^[a-z ,.'-]+/i$", value);
 
-      case "username":
-        return !!new RegExp("^w+$", value);
+        case "username":
+            return !!new RegExp("^w+$", value);
 
-      case "mail":
-        return /^([a-zA-Z0-9_.\-+])+@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value);
+        case "mail":
+            return /^([a-zA-Z0-9_.\-+])+@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value);
 
-      default:
-        return true;
+        default:
+            return true;
     }
 };
 
@@ -563,66 +563,57 @@ const $cookie = (name = "*", value = null, expire = null, path = "/", domain = "
  * This Function validates form, it doesn't get the form data (serialize), that's done by $getForm
  * @param element {HTMLElement|HTMLFormElement} Element to trigger form check or the form element itself
  * @param option {Object} Element to trigger form check or the form element itself
- * {string|function} option.errorDisplay manner in which the error message should be displayed [default=popUp]
- *      @value {errorDisplay} === "popUp"[default] || "create"[create error message after field] || function(){}
  * {string} option.errorMessage error text to return to user (not necessary if using function for {errorDisplay})
  * @return {boolean} [false] if field(s) is|are empty || [true] if field(s) is|are not empty
  */ const $form = (element, option = {}) => {
-    let errorDisplay = option.display ?? "popUp";
     let errorMessage = option.message ?? "Please fill all required fields!";
     if (!(element.nodeName === "FORM")) element = element.closest("FORM");
+    if (!$id("osai-form-error")) $sel("head").$html("beforeend", `<style id="osai-form-error">.osai-form-error{background: #e66507 none padding-box !important; color: #ffff !important;}.osai-form-error::placeholder{color: #ffff !important;}</style>`);
     let elem = element.elements;
-    let xErrMsg = () => {
-        let e = $id("osai-err-msg");
-        return $in(e) && e.remove();
-    };
     let xTest = () => {
         $sela("input[data-osai-tested='true']").forEach((test => {
             $data(test, "osai-tested", "del");
         }));
     };
     let aErrMsg = (formField, customMsg = errorMessage) => {
-        if (errorDisplay === "popUp") {
-            if ($data(formField, "osai-error") === null || $data(formField, "osai-error") === "") $data(formField, "osai-error", $style(formField, "css").background);
-            osNote(customMsg, "danger");
-            setTimeout((() => {
-                formField.style.background = "#f40204 none padding-box";
-                formField.focus();
-            }), 100);
-            $on(formField, "input,change", (() => formField.style.background = $data(formField, "osai-error")), "addEvent");
-        } else if (errorDisplay === "create") {
-            let errBx = $id("osai-err-msg");
-            $in(errBx) && errBx.remove();
-            $html(formField, "afterend", `<div id="osai-err-msg">${customMsg}</div>`);
-            setTimeout((() => {
-                $style($id("osai-err-msg"), "font-size: 14px; background-color: #e25656; color: #fff; padding: 5px; margin: 5px auto; border-radius: 4px"), 
-                formField.focus();
-            }), 700);
-            $on(formField, "input", xErrMsg, "addEvent");
-        } else {
-            try {
-                errorDisplay();
-            } catch (e) {
-                $omjsError("$form", e, true, `%c "display" param can only take the following;\n"popup" for a popup notification\n"create" for a message directly under the required field\nOR a custom "function" from dev`, "background: #fff3cd; color: #1d2124");
-            }
-        }
+        if (!$id("osai-form-error-notify")) osNote(customMsg, "danger", {
+            id: "osai-form-error-notify"
+        });
+        setTimeout((() => {
+            formField.$class("add", "osai-form-error");
+            formField.focus();
+        }), 100);
+        $on(formField, "input,change", (() => formField.$class("del", "osai-form-error")), "addEvent");
         xTest();
         return false;
     };
+    let passedCheck = true;
     for (let i = 0; i < elem.length; i++) {
         let field = elem[i], test = field.name && field.required && field.disabled === false;
-        if (test && (field.value.trim() === "" || field.value === undefined || field.value === null)) return aErrMsg(field); else if (test && field.type === "email" && !$check(field.value, "mail")) return aErrMsg(field, "Invalid email format, should be <div style='font-weight: bold; text-align: center'>\"[A-Za-Z_.-]@[A-Za-Z.-].[A-Za-Z_.-].[A-Za-Z]\"</div>"); else if (test && (field.type === "radio" || field.type === "checkbox") && !$data(field, "osai-tested")) {
+        if (test && (field.value.trim() === "" || field.value === undefined || field.value === null)) passedCheck = aErrMsg(field, errorMessage); else if (test && field.type === "email" && !$check(field.value, "mail")) passedCheck = aErrMsg(field, "Invalid email format, should be <div style='font-weight: bold; text-align: center'>\"[A-Za-Z_.-]@[A-Za-Z.-].[A-Za-Z_.-].[A-Za-Z]\"</div>"); else if (test && field.type === "file" && $data(field, "max-size")) {
+            let maxSize = parseFloat($data(field, "max-size"));
+            $loop(field.files, (file => {
+                if (file.size < maxSize) return "continue";
+                const maxSizeRaw = maxSize / 1e6;
+                maxSize = (maxSizeRaw + "").toLocaleString(undefined, {
+                    minimumFractionDigits: 2
+                });
+                maxSize = maxSizeRaw > 1 ? maxSize + "mb" : maxSize + "bytes";
+                name = field.name.replaceAll("_", " ").replaceAll("-", " ");
+                passedCheck = aErrMsg(field, `File cannot exceed max size limit of ${maxSize}, please check ${name} and update it`);
+            }));
+        } else if (test && (field.type === "radio" || field.type === "checkbox") && !$data(field, "osai-tested")) {
             let marked = 0;
             $name(field.name).forEach((radio => {
                 $data(radio, "osai-tested", "true");
                 if (marked === 1) return;
                 if (radio.checked) marked = 1;
             }));
-            if (marked === 0) return aErrMsg(field, "Please select the required number of options from the required checklist");
+            if (marked === 0) passedCheck = aErrMsg(field, "Please select the required number of options from the required checklist");
         }
     }
     xTest();
-    return true;
+    return passedCheck;
 };
 
 /**!
@@ -654,7 +645,7 @@ const $cookie = (name = "*", value = null, expire = null, path = "/", domain = "
     let alreadyChecked;
     for (let i = 0; i < form.elements.length; i++) {
         let field = form.elements[i];
-        if (field.name && field.type === "file" && field.disabled === false) hasFile = true;
+        if (field.name && field.type === "file" && field.disabled === false && field.files.length > 0) hasFile = true;
         if (!field.name || field.disabled || field.type === "file" || field.type === "reset" || field.type === "submit" || field.type === "button") continue;
         if (field.type === "select-multiple") $loop(field.options, (v => {
             if (v.selected) addField(field.name, v.value);
@@ -765,6 +756,39 @@ const $debounce = (fn, interval, uniqueId = null) => {
     _$_$debounceStore[timeout] = fnStr;
 };
 
+const $copyToClipboard = (str, successMsg = "Copied to clipboard") => {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(str).catch((() => osNote("Cannot copy, enable clipboard permission from your setting and try again", "warn"))).then((r => osNote(successMsg, "success")));
+        return true;
+    }
+    try {
+        if ($id("LAY-ENVIRONMENT").content !== "DEV") {
+            console.warn(`You tried to use a deprecated way to copy a string in a non dev environment. String: \n ${str}`);
+            return true;
+        }
+    } catch (e) {
+        console.warn("Using a function that depends on core Lay features outside Lay framework");
+        console.warn(`You tried to use a deprecated way to copy a string in a non dev environment. String: \n ${str}`);
+        return true;
+    }
+    const el = document.createElement("textarea");
+    el.value = str;
+    el.setAttribute("readonly", "");
+    el.style.position = "absolute";
+    el.style.left = "-9999px";
+    document.body.appendChild(el);
+    el.select();
+    try {
+        document.execCommand("copy");
+        osNote(successMsg, "success");
+    } catch (e) {
+        console.warn(e);
+    } finally {
+        document.body.removeChild(el);
+    }
+    return true;
+};
+
 const $preloader = (act = "show") => {
     if (!$sel(".osai-preloader")) $html($sel("body"), "beforeend", `<div class="osai-preloader" style="display:none"><svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path d="M33.7 0.419922C32.6768 0.428607 31.6906 0.803566 30.9201 1.47684C30.1496 2.15011 29.6458 3.07715 29.5 4.08992C28.5259 10.0187 25.4776 15.4087 20.8988 19.2989C16.32 23.1891 10.5083 25.3265 4.5 25.3299C3.37445 25.3352 2.2965 25.7846 1.50061 26.5805C0.704714 27.3764 0.25526 28.4544 0.25 29.5799V86.0499C0.25 89.2017 0.87078 92.3225 2.07689 95.2343C3.28301 98.1461 5.05083 100.792 7.27944 103.02C9.50804 105.249 12.1538 107.017 15.0656 108.223C17.9774 109.429 21.0983 110.05 24.25 110.05H75.6C76.6302 110.034 77.6202 109.647 78.388 108.96C79.1559 108.273 79.6501 107.332 79.78 106.31C80.584 100.96 83.0765 96.007 86.8938 92.1735C90.7112 88.34 95.6536 85.8266 101 84.9999C103.562 84.6132 106.168 84.6132 108.73 84.9999H109.73V24.4499C109.73 18.0847 107.201 11.9802 102.701 7.47936C98.1997 2.97849 92.0952 0.449923 85.73 0.449923L33.7 0.419922ZM61.57 79.9099H47.73C45.379 79.9099 43.051 79.4465 40.8792 78.5462C38.7074 77.6459 36.7343 76.3264 35.0728 74.663C33.4113 72.9996 32.0939 71.0251 31.1961 68.8523C30.2982 66.6794 29.8374 64.351 29.84 61.9999V46.7499C29.8387 44.6348 30.2542 42.5401 31.0627 40.5856C31.8712 38.6312 33.0569 36.8551 34.552 35.359C36.0472 33.863 37.8225 32.6761 39.7765 31.8664C41.7305 31.0567 43.8249 30.6399 45.94 30.6399H63.36C67.6326 30.6399 71.7303 32.3372 74.7515 35.3584C77.7727 38.3796 79.47 42.4773 79.47 46.7499V61.9999C79.4713 64.3514 79.0093 66.6801 78.1103 68.853C77.2113 71.0259 75.8931 73.0004 74.2308 74.6636C72.5685 76.3268 70.5947 77.6462 68.4223 78.5464C66.25 79.4466 63.9215 79.9099 61.57 79.9099Z" fill="url(#paint0_linear_29_21)"/>\n<defs>\n<linearGradient id="paint0_linear_29_21" x1="8.59" y1="74.8799" x2="109.29" y2="31.9699" gradientUnits="userSpaceOnUse">\n<stop stop-color="#53C3BD"/>\n<stop offset="0.47" stop-color="#739CD2"/>\n<stop offset="1" stop-color="#4C64AF"/>\n</linearGradient>\n</defs>\n</svg>\n<span>Loading...please wait</span></div></div>`);
     if (!$sel(".osai-preloader-css")) $html($sel("head"), "beforeend", `<style type="text/css" class="osai-preloader-css">.osai-preloader{display: flex;position: fixed; flex-direction:column;width: 101vw;height: 101vh;justify-content: center;align-items: center;background: rgba(8,11,31,0.8);left: -5px;right: -5px;top: -5px;bottom: -5px;z-index:9993}.osai-preloader__container{display: table; text-align: center;margin:0;padding:0;}.osai-preloader svg{width: 80px;padding: 1px;border-radius: 5px;animation: pulse 2s infinite linear;transition: .6s ease-in-out}.osai-preloader span{color: #fff;text-align: center;margin-top: 10px;display: block}@keyframes pulse {0% {transform: scale(0.6);opacity: 0}33% {transform: scale(1);opacity: 1}100%{transform: scale(1.4);opacity: 0}}</style>`);
@@ -780,23 +804,23 @@ const $preloader = (act = "show") => {
  * @version 2.1.0
  * @since 05/01/2021
  * @modified 08/01/2025
- * @param url {string|Object} = url of request being sent or an object containing the url and options of the request
+ * @param {string|Object} url = url of request being sent or an object containing the url and options of the request
  * url should be passed using "action" as the key
- * @param option {Object}
+ * @param {object|function|string} option
  * - `option.credential` {boolean} = send request with credentials when working with CORS
  *  - `option.content` {string} = XMLHTTPRequest [default = text/plain] only necessary when user wants to set custom dataType aside json,xml and native formData
  *  - `option.method` {string} = method of request [default = GET]
  *  - `option.data` {any} [use data or form] = data sending [only necessary for post method]. It could be HTMLElement inside the form, like button, etc
  *  - `option.type` {string} = type of data to be sent/returned [default = text]
  *  - `option.alert` {bool} = to use js default alert or OMJ$ default alert notifier [default=false]
- *  - `option.strict` {bool} = [default=false] when true, automatic JSON.parse for resolve that comes as JSON text will be stopped
+ *  - `option.displayError` {bool} = [default=true] Displays error messages like 500 and 404 automatically from the server
  *  - `option.debounce` {Number} = [default=0] This causes a debounce for request
  *  - `option.preload` {function} = function to carryout before response is received
  *  - `option.progress` {function} = function to execute, while upload is in progress [one arg (response)]
  *  - `option.error` {function} = it executes for all kinds of error, it's like the finally of errors
  *  - `option.loaded` {function} = optional callback function that should be executed when the request is successful, either this or a promise
  *  - `option.abort` {function} = function to execute on upload abort
- * @param data {any} same as `option.data`, only comes in play when three parameter wants to be used
+ * @param {boolean|object|string} data same as `option.data`, only comes in play when three parameter wants to be used
  * @return {Promise}
  */ const $curl = (url, option = {}, data = null) => new Promise(((resolve, reject) => {
     if ($type(url) === "Object") {
@@ -811,20 +835,24 @@ const $preloader = (act = "show") => {
         type: option
     };
     if ($type(data) === "Boolean") {
-        option.strict = data;
+        option.displayError = data;
         data = null;
     }
     let xhr = false, response;
-    let credential = option.credential ?? false;
+    let credential = option.credential ?? option.credentials ?? false;
     let headers = option.headers ?? {};
-    headers["Lay-Domain"] = $lay.page.domain;
-    headers["Lay-Domain-ID"] = $lay.page.domain_id;
+    try {
+        headers["Lay-Domain"] = $lay.page.domain;
+        headers["Lay-Domain-ID"] = $lay.page.domain_id;
+    } catch (e) {
+        console.warn("Using a Lay attribute outside a Lay Framework");
+    }
     let content = option.content ?? "text/plain";
     let method = option.method ?? "get";
     let type = option.type ?? "text";
     let returnType = option.return ?? option.type ?? null;
     let alert_error = option.alert ?? false;
-    let strict = option.strict ?? true;
+    let displayError = option.displayError ?? true;
     let preload = option.preload ?? (() => "preload");
     let progress = option.progress ?? (() => "progress");
     let error = option.error ?? (() => "error");
@@ -846,9 +874,22 @@ const $preloader = (act = "show") => {
     let abort = option.abort ?? (() => osNote("Request aborted!", "warn"));
     let errRoutine = (msg, xhr, response = null) => {
         $omjsError("$curl", xhr.e ?? xhr.statusText);
-        if (error(xhr.status, xhr, response) === "error" && strict) {
-            if (alert_error) alert(msg); else osNote(msg, "fail", {
-                duration: -1
+        if (error(xhr.status, xhr, response) === "error" && displayError) {
+            const ogMsg = msg;
+            let alertType = "fail";
+            try {
+                msg = response.message ?? msg;
+            } catch (e) {
+                msg = ogMsg;
+            }
+            try {
+                alertType = response.status.toLowerCase();
+            } catch (e) {
+                alertType = "fail";
+            }
+            if (alert_error) alert(msg); else osNote(msg, alertType, {
+                duration: -1,
+                showCopy: true
             });
         }
         reject({
@@ -870,7 +911,7 @@ const $preloader = (act = "show") => {
     const exec = () => {
         xhr.open(method, url, true);
         $on(xhr.upload, "progress", (event => progress(event)));
-        $on(xhr, "error", (() => errRoutine("An error occurred" + xhr.statusText, xhr)));
+        $on(xhr, "error", (() => errRoutine("An error occurred " + xhr.statusText, xhr)));
         $on(xhr, "abort", abort);
         $on(xhr, "timeout", (e => timeout.then(e, xhr)), "on");
         $on(xhr, "readystatechange", (event => {
@@ -878,88 +919,91 @@ const $preloader = (act = "show") => {
             if (xhr.readyState === 4) {
                 type = returnType ?? "json";
                 switch (status) {
-                  case 0:
-                    if (timer !== xhr.timeout / 1e3) errRoutine(`Failed, ensure you have steady connection and try again, server request might be too heavy for your current network`, xhr);
-                    break;
+                    case 0:
+                        if (timer !== xhr.timeout / 1e3) errRoutine(`Request failed! Ensure your network is stable enough then try again.`, xhr);
+                        break;
 
-                  default:
-                    const isError = !(status > 199 && status < 300);
-                    response = method === "HEAD" ? xhr : xhr.responseText ?? xhr.response;
-                    if (method !== "HEAD") {
-                        if (type !== "json" && (response.trim().substring(0, 1) === "{" || response.trim().substring(0, 1) === "[")) type = "json";
-                        if (type === "xml") response = xhr.responseXML;
-                        if (type === "json") {
-                            try {
-                                response = JSON.parse(response);
-                            } catch (e) {
-                                if (!isError) {
-                                    xhr["e"] = e;
-                                    errRoutine("Server-side error, please contact support if problem persists", xhr);
-                                } else response = "The server sent an error that could not be parsed";
+                    default:
+                        const isOk = status > 199 && status < 300;
+                        const isServerError = status > 499;
+                        response = method === "HEAD" ? xhr : xhr.responseText ?? xhr.response;
+                        if (method !== "HEAD") {
+                            if (type !== "json" && (response.trim().substring(0, 1) === "{" || response.trim().substring(0, 1) === "[")) type = "json";
+                            if (type === "xml") response = xhr.responseXML;
+                            if (type === "json") {
+                                try {
+                                    response = JSON.parse(response);
+                                } catch (e) {
+                                    let msg = "The server sent a response that could not be parsed but returned a code: " + status;
+                                    if (!isOk) {
+                                        xhr["e"] = e;
+                                        if (isServerError) msg = "Server error, please contact support if problem persists";
+                                    }
+                                    return errRoutine(msg, xhr, response);
+                                }
                             }
                         }
-                    }
-                    if (isError) return errRoutine(`Request Failed! Code: ${status}; Message: ${xhr.statusText}`, xhr, response);
-                    if (loaded !== "loaded") loaded(response, xhr, event);
-                    resolve(response, xhr, event);
-                    break;
+                        if (!isOk) return errRoutine(`Request Failed! Code: ${status}; Message: ${xhr.statusText}`, xhr, response);
+                        if (loaded !== "loaded") loaded(response, xhr, event);
+                        resolve(response, xhr, event);
+                        break;
                 }
             }
         }));
         if (data) {
             switch ($type(data)) {
-              case "String":
-              case "Object":
-              case "FormData":
-                break;
+                case "String":
+                case "Object":
+                case "FormData":
+                    break;
 
-              case "File":
-                type = "file";
-                let x = data;
-                data = new FormData;
-                data.append("file", x);
-                break;
-
-              default:
-                data = $getForm(data, true);
-                if (data.hasFile) {
-                    data = data.file;
+                case "File":
                     type = "file";
-                } else data = type === "json" ? data.object : data.string;
-                break;
+                    let x = data;
+                    data = new FormData;
+                    data.append("file", x);
+                    break;
+
+                default:
+                    data = $getForm(data, true);
+                    if (data.hasFile) {
+                        data = data.file;
+                        type = "file";
+                    } else data = type === "json" ? data.object : data.string;
+                    break;
             }
         }
         if (option.xhrSetup) option.xhrSetup(xhr);
         let requestHeader = "application/x-www-form-urlencoded";
         switch (type) {
-          default:
-            break;
+            default:
+                break;
 
-          case "file":
-            requestHeader = null;
-            break;
+            case "file":
+                requestHeader = null;
+                break;
 
-          case "json":
-            requestHeader = method === "get" ? requestHeader : "application/json";
-            data = JSON.stringify(data);
-            break;
+            case "json":
+                requestHeader = method === "get" ? requestHeader : "application/json";
+                data = JSON.stringify(data);
+                break;
 
-          case "text":
-            let x = data;
-            if ($type(data) === "Object") {
-                x = "";
-                $loop(data, ((value, name) => x += name + "=" + value + "&"));
-            }
-            data = x?.replace(/&+$/, "");
-            break;
+            case "text":
+                let x = data;
+                if ($type(data) === "Object") {
+                    x = "";
+                    $loop(data, ((value, name) => x += name + "=" + value + "&"));
+                }
+                data = x?.replace(/&+$/, "");
+                break;
 
-          case "xml":
-            requestHeader = method !== "GET" ? "text/xml" : requestHeader;
-            break;
+            case "xml":
+                requestHeader = method !== "GET" ? "text/xml" : requestHeader;
+                break;
 
-          case "custom":
-            requestHeader = method !== "GET" ? content : requestHeader;
-            break;
+            case "custom":
+                requestHeader = method !== "GET" ? content : requestHeader;
+                break;
         }
         requestHeader && xhr.setRequestHeader("Content-Type", requestHeader);
         $loop(headers, ((value, key) => xhr.setRequestHeader(key, value)));
@@ -998,11 +1042,11 @@ const $freeze = (element, operation, attr = true) => {
  * @author Osahenrumwen Aigbogun
  * @version 1.4
  * @copyright (c) 2019 Osai Technologies LLC.
- * @modified 18/09/2022
+ * @modified 14/02/2025
  */ const $osaiBox = (boxToDraw = "all") => {
     const dialogZindex = 9990;
     const colorVariant = `\n\t\t/*normal variant*/\n\t\t--text: #fffffa;\n\t\t--bg: #1d2124;\n\t\t--link: #009edc;\n\t\t--info: #445ede;\n\t\t--warn: #ffde5c;\n\t\t--fail: #f40204;\n\t\t--fade: #e2e2e2;\n\t\t--success: #0ead69;\n\t\t/*dark variant*/\n\t\t--dark-text: #f5f7fb;\n\t\t--dark-link: #00506e;\n\t\t--dark-info: #3247ac;\n\t\t--dark-warn: #626200;\n\t\t--dark-fail: #a20002;\n\t\t--dark-success: #104e00;\n\t`;
-    const ggIcon = `.gg-bell,.gg-bell::before{border-top-left-radius:100px;border-top-right-radius:100px}.gg-bell{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));border:2px solid;border-bottom:0;width:14px;height:14px}.gg-bell::after,.gg-bell::before{content:"";display:block;box-sizing:border-box;position:absolute}.gg-bell::before{background:currentColor;width:4px;height:4px;top:-4px;left:3px}.gg-bell::after{border-radius:3px;width:16px;height:10px;border:6px solid transparent;border-top:1px solid transparent;box-shadow:inset 0 0 0 4px,0 -2px 0 0;top:14px;left:-3px;border-bottom-left-radius:100px;border-bottom-right-radius:100px}.gg-check{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:22px;height:22px;border:2px solid transparent;border-radius:100px}.gg-check::after{content:"";display:block;box-sizing:border-box;position:absolute;left:3px;top:-1px;width:6px;height:10px;border-width:0 2px 2px 0;border-style:solid;transform-origin:bottom left;transform:rotate(45deg)}.gg-check-o{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:22px;height:22px;border:2px solid;border-radius:100px}.gg-check-o::after{content:"";display:block;box-sizing:border-box;position:absolute;left:3px;top:-1px;width:6px;height:10px;border-color:currentColor;border-width:0 2px 2px 0;border-style:solid;transform-origin:bottom left;transform:rotate(45deg)}.gg-bulb{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:16px;height:16px;border:2px solid;border-bottom-color:transparent;border-radius:100px}.gg-bulb::after,.gg-bulb::before{content:"";display:block;box-sizing:border-box;position:absolute}.gg-bulb::before{border-top:0;border-bottom-left-radius:18px;border-bottom-right-radius:18px;top:10px;border-bottom:2px solid transparent;box-shadow:0 5px 0 -2px,inset 2px 0 0 0,inset -2px 0 0 0,inset 0 -4px 0 -2px;width:8px;height:8px;left:2px}.gg-bulb::after{width:12px;height:2px;border-left:3px solid;border-right:3px solid;border-radius:2px;bottom:0;left:0}.gg-danger{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:20px;height:20px;border:2px solid;border-radius:40px}.gg-danger::after,.gg-danger::before{content:"";display:block;box-sizing:border-box;position:absolute;border-radius:3px;width:2px;background:currentColor;left:7px}.gg-danger::after{top:2px;height:8px}.gg-danger::before{height:2px;bottom:2px}.gg-dark-mode{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));border:2px solid;border-radius:100px;width:20px;height:20px}\n\t.gg-close-o{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,.9));width:22px;height:22px;border:2px solid;border-radius:40px}.gg-close-o::after,.gg-close-o::before{content:"";display:block;box-sizing:border-box;position:absolute;width:12px;height:2px;background:currentColor;transform:rotate(45deg);border-radius:5px;top:8px;left:3px}.gg-close-o::after{transform:rotate(-45deg)}\n\t.gg-close{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:22px;height:22px;border:2px solid transparent;border-radius:40px}.gg-close::after,.gg-close::before{content:"";display:block;box-sizing:border-box;position:absolute;width:16px;height:2px;background:currentColor;transform:rotate(45deg);border-radius:5px;top:8px;left:1px}.gg-close::after{transform:rotate(-45deg)}.gg-add-r{box-sizing:border-box;position:relative;display:block;width:22px;height:22px;border:2px solid;transform:scale(var(--ggs,1));border-radius:4px}.gg-add-r::after,.gg-add-r::before{content:"";display:block;box-sizing:border-box;position:absolute;width:10px;height:2px;background:currentColor;border-radius:5px;top:8px;left:4px}.gg-add-r::after{width:2px;height:10px;top:4px;left:8px}.gg-add{box-sizing:border-box;position:relative;display:block;width:22px;height:22px;border:2px solid;transform:scale(var(--ggs,1));border-radius:22px}.gg-add::after,.gg-add::before{content:"";display:block;box-sizing:border-box;position:absolute;width:10px;height:2px;background:currentColor;border-radius:5px;top:8px;left:4px}.gg-add::after{width:2px;height:10px;top:4px;left:8px}.gg-adidas{position:relative;box-sizing:border-box;display:block;width:23px;height:15px;transform:scale(var(--ggs,1));overflow:hidden}\n\t`;
+    const ggIcon = `.gg-copy{box-sizing: border-box;position: relative;display: block;transform: scale(var(--ggs, 1));width: 14px;height: 18px;border: 2px solid;margin-left: -5px;margin-top: -4px}.gg-copy::after,.gg-copy::before{content: "";display: block;box-sizing: border-box;position: absolute}.gg-copy::before{background: linear-gradient(to left, currentColor 5px, transparent 0) no-repeat right top/5px 2px, linear-gradient(to left, currentColor 5px, transparent 0) no-repeat left bottom/ 2px 5px;box-shadow: inset -4px -4px 0 -2px;bottom: -6px;right: -6px;width: 14px;height: 18px}.gg-copy::after{ width: 6px; height: 2px; background: currentColor; left: 2px; top: 2px; box-shadow: 0 4px 0, 0 8px 0}\n        .gg-bell,.gg-bell::before{border-top-left-radius:100px;border-top-right-radius:100px}.gg-bell{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));border:2px solid;border-bottom:0;width:14px;height:14px}.gg-bell::after,.gg-bell::before{content:"";display:block;box-sizing:border-box;position:absolute}.gg-bell::before{background:currentColor;width:4px;height:4px;top:-4px;left:3px}.gg-bell::after{border-radius:3px;width:16px;height:10px;border:6px solid transparent;border-top:1px solid transparent;box-shadow:inset 0 0 0 4px,0 -2px 0 0;top:14px;left:-3px;border-bottom-left-radius:100px;border-bottom-right-radius:100px}.gg-check{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:22px;height:22px;border:2px solid transparent;border-radius:100px}.gg-check::after{content:"";display:block;box-sizing:border-box;position:absolute;left:3px;top:-1px;width:6px;height:10px;border-width:0 2px 2px 0;border-style:solid;transform-origin:bottom left;transform:rotate(45deg)}.gg-check-o{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:22px;height:22px;border:2px solid;border-radius:100px}.gg-check-o::after{content:"";display:block;box-sizing:border-box;position:absolute;left:3px;top:-1px;width:6px;height:10px;border-color:currentColor;border-width:0 2px 2px 0;border-style:solid;transform-origin:bottom left;transform:rotate(45deg)}.gg-bulb{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:16px;height:16px;border:2px solid;border-bottom-color:transparent;border-radius:100px}.gg-bulb::after,.gg-bulb::before{content:"";display:block;box-sizing:border-box;position:absolute}.gg-bulb::before{border-top:0;border-bottom-left-radius:18px;border-bottom-right-radius:18px;top:10px;border-bottom:2px solid transparent;box-shadow:0 5px 0 -2px,inset 2px 0 0 0,inset -2px 0 0 0,inset 0 -4px 0 -2px;width:8px;height:8px;left:2px}.gg-bulb::after{width:12px;height:2px;border-left:3px solid;border-right:3px solid;border-radius:2px;bottom:0;left:0}.gg-danger{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:20px;height:20px;border:2px solid;border-radius:40px}.gg-danger::after,.gg-danger::before{content:"";display:block;box-sizing:border-box;position:absolute;border-radius:3px;width:2px;background:currentColor;left:7px}.gg-danger::after{top:2px;height:8px}.gg-danger::before{height:2px;bottom:2px}.gg-dark-mode{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));border:2px solid;border-radius:100px;width:20px;height:20px}\n        .gg-close-o{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,.9));width:22px;height:22px;border:2px solid;border-radius:40px}.gg-close-o::after,.gg-close-o::before{content:"";display:block;box-sizing:border-box;position:absolute;width:12px;height:2px;background:currentColor;transform:rotate(45deg);border-radius:5px;top:8px;left:3px}.gg-close-o::after{transform:rotate(-45deg)}\n        .gg-close{box-sizing:border-box;position:relative;display:block;transform:scale(var(--ggs,1));width:22px;height:22px;border:2px solid transparent;border-radius:40px}.gg-close::after,.gg-close::before{content:"";display:block;box-sizing:border-box;position:absolute;width:16px;height:2px;background:currentColor;transform:rotate(45deg);border-radius:5px;top:8px;left:1px}.gg-close::after{transform:rotate(-45deg)}.gg-add-r{box-sizing:border-box;position:relative;display:block;width:22px;height:22px;border:2px solid;transform:scale(var(--ggs,1));border-radius:4px}.gg-add-r::after,.gg-add-r::before{content:"";display:block;box-sizing:border-box;position:absolute;width:10px;height:2px;background:currentColor;border-radius:5px;top:8px;left:4px}.gg-add-r::after{width:2px;height:10px;top:4px;left:8px}.gg-add{box-sizing:border-box;position:relative;display:block;width:22px;height:22px;border:2px solid;transform:scale(var(--ggs,1));border-radius:22px}.gg-add::after,.gg-add::before{content:"";display:block;box-sizing:border-box;position:absolute;width:10px;height:2px;background:currentColor;border-radius:5px;top:8px;left:4px}.gg-add::after{width:2px;height:10px;top:4px;left:8px}.gg-adidas{position:relative;box-sizing:border-box;display:block;width:23px;height:15px;transform:scale(var(--ggs,1));overflow:hidden}\n        `;
     if (!$in($sel(".osai-gg-icon-abstract"))) $html($sel("head"), "beforeend", `<style class="osai-gg-icon-abstract">.osai-dialogbox,.osai-notifier {${colorVariant} -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; scroll-behavior: smooth;} ${ggIcon}</style>`);
     let dialog = {}, notifier = {};
     if (boxToDraw === "all" || boxToDraw === "dialog" || boxToDraw === "modal") {
@@ -1034,34 +1078,34 @@ const $freeze = (element, operation, attr = true) => {
         };
         const BOX_SIZE = size => {
             switch (size) {
-              case "xs":
-                BOX_INNER_WRAPPER.style.minWidth = "30vw";
-                break;
+                case "xs":
+                    BOX_INNER_WRAPPER.style.minWidth = "30vw";
+                    break;
 
-              case "sm":
-                BOX_INNER_WRAPPER.style.minWidth = "45vw";
-                break;
+                case "sm":
+                    BOX_INNER_WRAPPER.style.minWidth = "45vw";
+                    break;
 
-              case "md":
-                BOX_INNER_WRAPPER.style.minWidth = "60vw";
-                break;
+                case "md":
+                    BOX_INNER_WRAPPER.style.minWidth = "60vw";
+                    break;
 
-              case "lg":
-                BOX_INNER_WRAPPER.style.minWidth = "75vw";
-                break;
+                case "lg":
+                    BOX_INNER_WRAPPER.style.minWidth = "75vw";
+                    break;
 
-              case "xl":
-                BOX_INNER_WRAPPER.style.minWidth = "90vw";
-                break;
+                case "xl":
+                    BOX_INNER_WRAPPER.style.minWidth = "90vw";
+                    break;
 
-              case "xxl":
-                BOX_INNER_WRAPPER.style.minWidth = "99vw";
-                break;
+                case "xxl":
+                    BOX_INNER_WRAPPER.style.minWidth = "99vw";
+                    break;
 
-              default:
-                let configSelector = config => $sel("input[data-config='" + config + "'].osai-dialogbox__config");
-                if (configSelector("box-size") && $data(configSelector("box-size"), "value") !== "undefined") BOX_SIZE($data(configSelector("box-size"), "value")); else BOX_INNER_WRAPPER.style.minWidth = "60vw";
-                break;
+                default:
+                    let configSelector = config => $sel("input[data-config='" + config + "'].osai-dialogbox__config");
+                    if (configSelector("box-size") && $data(configSelector("box-size"), "value") !== "undefined") BOX_SIZE($data(configSelector("box-size"), "value")); else BOX_INNER_WRAPPER.style.minWidth = "60vw";
+                    break;
             }
         };
         const BOX_RENDER = (closeOnBlur, size, align, onClose, then) => {
@@ -1103,67 +1147,67 @@ const $freeze = (element, operation, attr = true) => {
         const BOX_FLUSH = (where = "*") => {
             $style(BOX_HEADER, "del");
             switch (where) {
-              case "head":
-                $html(BOX_HEAD, "in", "");
-                $style(BOX_HEAD, "del");
-                break;
+                case "head":
+                    $html(BOX_HEAD, "in", "");
+                    $style(BOX_HEAD, "del");
+                    break;
 
-              case "body":
-                $html(BOX_BODY, "in", "");
-                $style(BOX_BODY, "del");
-                break;
+                case "body":
+                    $html(BOX_BODY, "in", "");
+                    $style(BOX_BODY, "del");
+                    break;
 
-              case "foot":
-                $html(BOX_FOOT, "in", "");
-                $style(BOX_FOOT, "del");
-                break;
+                case "foot":
+                    $html(BOX_FOOT, "in", "");
+                    $style(BOX_FOOT, "del");
+                    break;
 
-              default:
-                $html(BOX_HEAD, "in", "");
-                $html(BOX_BODY, "in", "");
-                $html(BOX_FOOT, "in", "");
-                $style(BOX_WRAPPER, "del");
-                $style(BOX_HEAD, "del");
-                $style(BOX_HEADER, "del");
-                $style(BOX_BODY, "del");
-                $style(BOX_FOOT, "del");
-                break;
+                default:
+                    $html(BOX_HEAD, "in", "");
+                    $html(BOX_BODY, "in", "");
+                    $html(BOX_FOOT, "in", "");
+                    $style(BOX_WRAPPER, "del");
+                    $style(BOX_HEAD, "del");
+                    $style(BOX_HEADER, "del");
+                    $style(BOX_BODY, "del");
+                    $style(BOX_FOOT, "del");
+                    break;
             }
             return this;
         };
         const BOX_INSERT = (where, text = "") => {
             switch (where) {
-              case "head":
-                where = BOX_HEAD;
-                $style(BOX_HEAD, "del");
-                break;
+                case "head":
+                    where = BOX_HEAD;
+                    $style(BOX_HEAD, "del");
+                    break;
 
-              case "body":
-                where = BOX_BODY;
-                break;
+                case "body":
+                    where = BOX_BODY;
+                    break;
 
-              case "foot":
-                where = BOX_FOOT;
-                break;
+                case "foot":
+                    where = BOX_FOOT;
+                    break;
 
-              case "head+":
-                where = BOX_HEAD;
-                $style(BOX_HEAD, "del");
-                text = $html(BOX_HEAD) + text;
-                break;
+                case "head+":
+                    where = BOX_HEAD;
+                    $style(BOX_HEAD, "del");
+                    text = $html(BOX_HEAD) + text;
+                    break;
 
-              case "body+":
-                where = BOX_BODY;
-                text = $html(BOX_BODY) + text;
-                break;
+                case "body+":
+                    where = BOX_BODY;
+                    text = $html(BOX_BODY) + text;
+                    break;
 
-              case "foot+":
-                where = BOX_FOOT;
-                text = $html(BOX_FOOT) + text;
-                break;
+                case "foot+":
+                    where = BOX_FOOT;
+                    text = $html(BOX_FOOT) + text;
+                    break;
 
-              default:
-                return;
+                default:
+                    return;
             }
             $html(where, "in", text);
         };
@@ -1225,7 +1269,7 @@ const $freeze = (element, operation, attr = true) => {
     }
     if (boxToDraw === "all" || boxToDraw === "notifier" || boxToDraw === "notify") {
         if (!$in($sel(".osai-simple-notifier"))) $html($sel("body"), "beforeend", `<div class="osai-simple-notifier"><div style="display: none" class="osai-notifier__config_wrapper"></div></div>`);
-        if (!$in($sel(".osai-notifier__stylesheet"))) $html($sel("head"), "beforeend", `<style class="osai-notifier__stylesheet" rel="stylesheet" media="all">\n\t\t\t.osai-notifier{\n\t\t\t\tscroll-behavior: smooth;\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 10px;\n\t\t\t\tright: 10px;\n\t\t\t\tborder-radius: 5px;\n\t\t\t\tpadding: 10px;\n\t\t\t\tfont-weight: 500;\n\t\t\t\tcolor: var(--dark-text);\n\t\t\t\tbackground-color: var(--dark-info);\n\t\t\t\tbox-shadow: 1px 2px 4px 0 var(--bg);\n\t\t\t\tdisplay:flex;\n\t\t\t\topacity: 0;\n\t\t\t\ttransform: translate(0,-50%);\n\t\t\t\tz-index: 9993;\n\t\t\t\tmin-height: 50px;\n\t\t\t\tmin-width: 150px;\n\t\t\t\tjustify-content: space-between;\n\t\t\t\talign-items: flex-start;\n                transition: ease-in-out all .8s;\n\t\t\t}\n\t\t\t.osai-notifier__display{\n\t\t\t\topacity: 1;\n\t\t\t\ttransform: translate(0,0);\n\t\t\t\tmax-width: 50vw;\n\t\t\t}\n\t\t\t.osai-notifier__display-center{\n\t\t\t\ttop: 50%; \n\t\t\t\tleft: 50%;\n                right: auto;\n\t\t\t\ttransform: translate(-50%,-50%);\n\t\t\t} @media (max-width: 767px){\n                .osai-notifier__display-center{\n                    max-width: 60vw;\n                }\n            }\n            @media (max-width: 426px){\n            \t.osai-notifier__display-center{\n                    max-width: 93vw;\n                }\n                .osai-notifier__display{\n\t\t\t\t\tmax-width: 93vw;\n\t\t\t\t}\n            }\n\t\t\t.osai-notifier__close{\n\t\t\t\tposition: absolute;\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t\tcursor: pointer;\n\t\t\t\topacity: .8;\n\t\t\t}\n\t\t\t.osai-notifier__close:hover{\n\t\t\t\topacity: 1;\n\t\t\t\tcolor: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.success,.osai-notifier.fail,.osai-notifier.warn,.osai-notifier.info{\n\t\t\t\tcolor: var(--dark-text);\n\t\t\t}\n\t\t\t.osai-notifier.success{\n\t\t\t\tbackground-color: var(--success);\n\t\t\t}\n\t\t\t.osai-notifier.fail{\n\t\t\t\tbackground-color: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.warn{\n\t\t\t\tbackground-color: var(--warn);\n\t\t\t\tcolor: var(--bg);\n\t\t\t}\n\t\t\t.osai-notifier.info{\n\t\t\t\tbackground-color: var(--info);\n\t\t\t}\n\t\t\t.osai-notifier__body{\n\t\t\t\tpadding: 5px 26px 5px 36px;\n\t\t\t\tpadding-left: 0;\n\t\t\t\ttext-align: center;\n\t\t\t\twidth: 100%;\n\t\t\t}\n\t\t</style>`);
+        if (!$in($sel(".osai-notifier__stylesheet"))) $html($sel("head"), "beforeend", `<style class="osai-notifier__stylesheet" rel="stylesheet" media="all">\n\t\t\t.osai-notifier{\n\t\t\t    line-height: normal;\n\t\t\t\tscroll-behavior: smooth;\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 10px;\n\t\t\t\tright: 10px;\n\t\t\t\tborder-radius: 0 10px 10px 0;\n\t\t\t\tpadding: 10px;\n\t\t\t\tfont-weight: 500;\n\t\t\t\tcolor: #000000;\n\t\t\t\tbackground-color: var(--text);\n\t\t\t\tborder-left: solid .5rem var(--bg);\n\t\t\t\tbox-shadow: 0 1px 2px rgba(0, 0, 0, .3);\n\t\t\t\tdisplay: flex;\n\t\t\t\topacity: 0;\n\t\t\t\ttransform: translate(50%, 0);\n\t\t\t\tz-index: 9993;\n\t\t\t\tmin-height: 50px;\n\t\t\t\tmin-width: 150px;\n\t\t\t\tjustify-content: center;\n\t\t\t\talign-items: center;\n                transition: ease-in-out all .5s;\n\t\t\t}\n\t\t\t.osai-notifier__dialog{\n\t\t\tpadding-left:10px;\n\t\t\t}\n\t\t\t.osai-notifier__copy{\n                border-radius: 5px;\n                padding: 8px 15px;\n                font-size: .8rem;\n                background: rgba(229,234,246,0.5);\n                transform: scale(.9);\n                margin-top: 10px;\n                display: flex;\n                gap: 10px;\n                justify-content: center;\n                align-items: center;\n                transition: all 0.55s ease-in-out;\n\t\t\t}\n\t\t\t.osai-notifier__copy:hover{\n\t\t\t    background: rgba(229,234,246,1);\n\t\t\t}\n\t\t\t.osai-notifier__display{\n\t\t\t\topacity: 1;\n\t\t\t\ttransform: translate(0,0);\n\t\t\t\tmax-width: 50vw;\n\t\t\t}\n\t\t\t.osai-notifier__display-center{\n\t\t\t\ttop: 50%; \n\t\t\t\tleft: 50%;\n                right: auto;\n\t\t\t\ttransform: translate(-50%,-50%);\n\t\t\t} @media (max-width: 767px){\n                .osai-notifier__display-center{\n                    max-width: 60vw;\n                }\n            }\n            @media (max-width: 426px){\n            \t.osai-notifier__display-center{\n                    max-width: 93vw;\n                }\n                .osai-notifier__display{\n\t\t\t\t\tmax-width: 93vw;\n\t\t\t\t}\n            }\n\t\t\t.osai-notifier__close{\n\t\t\t\tposition: absolute;\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t\tcursor: pointer;\n\t\t\t\topacity: .8;\n\t\t\t}\n\t\t\t.osai-notifier__close:hover{\n\t\t\t\topacity: 1;\n\t\t\t\tcolor: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.success{\n\t\t\t\tborder-color: var(--success);\n\t\t\t}\n\t\t\t.osai-notifier.fail{\n\t\t\t\tborder-color: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.warn{\n\t\t\t\tborder-color: var(--warn);\n\t\t\t}\n\t\t\t.osai-notifier.info{\n\t\t\t\tborder-color: var(--info);\n\t\t\t}\n\t\t\t.osai-notifier__body{\n\t\t\t\tpadding: 5px 26px 5px 36px;\n\t\t\t\tpadding-left: 0;\n\t\t\t\twidth: 100%;\n\t\t\t}\n\t\t</style>`);
         let presenceSelector = ".osai-simple-notifier";
         let sideCardSelector = ".osai-notifier-entry:not(.osai-notifier__display-center)";
         const NOTIFY = (dialog, theme, options) => {
@@ -1246,8 +1290,11 @@ const $freeze = (element, operation, attr = true) => {
             let position = options.position ?? configSelector("position") ?? "side";
             let uniqueId = options.id ? `id="${options.id}"` : "";
             let duration = parseInt(options.duration ?? configSelector("duration") ?? 5e3);
+            let showCopy = options.showCopy ?? configSelector("showCopy") ?? false;
             let defaultTopMargin = configSelector("margin") ?? 10;
             let previousEntryHeight = 0;
+            let operation = options.then ?? (() => null);
+            let onClose = options.onClose ?? (() => null);
             let getNextEntryTop = () => {
                 let nextTop = 0;
                 $loop($sela(sideCardSelector), (entry => nextTop += Math.floor(entry.offsetHeight + defaultTopMargin)));
@@ -1281,18 +1328,21 @@ const $freeze = (element, operation, attr = true) => {
                 adjustEntries(entrySibling, entrySibling.nextElementSibling);
             };
             let removeEntry = (entry, useDuration = true, closeEntry = false) => {
-                const remove = duration => setTimeout((() => {
-                    if (useDuration) {
+                const remove = (duration, ignoreDuration = false) => setTimeout((() => {
+                    if (useDuration && !ignoreDuration) {
                         setTimeout((() => $class(entry, "del", "osai-notifier__display")), duration);
                         duration = duration + 50;
                     }
                     adjustEntries(entry, entry.nextElementSibling, true);
-                    setTimeout((() => entry.remove()), 100);
+                    entry.$class("del", "osai-notifier__display");
+                    setTimeout((() => {
+                        entry.remove();
+                        try {
+                            onClose();
+                        } catch (e) {}
+                    }), 150);
                 }), duration);
-                if (closeEntry) {
-                    adjustEntries(entry, entry.nextElementSibling, true);
-                    setTimeout((() => entry.remove()), 100);
-                }
+                if (closeEntry) remove(0, true);
                 if (duration === "pin" || duration === "fixed" || duration === -1 || duration === false) return;
                 let removeNote = remove(duration);
                 $on(entry, "mouseover", (() => clearTimeout(removeNote)));
@@ -1306,6 +1356,13 @@ const $freeze = (element, operation, attr = true) => {
                     e.preventDefault();
                     removeEntry(entry, false, true);
                 }));
+                $on($sel(".osai-notifier__copy", entry), "click", (e => {
+                    e.preventDefault();
+                    $copyToClipboard($sel(".osai-notifier__dialog", entry).textContent);
+                }));
+                try {
+                    operation();
+                } catch (e) {}
                 removeEntry(entry);
                 if (!useThisHeight && $class(entry, "has", "osai-notifier__display-center")) return;
                 if (useThisHeight) return $style(entry, `top:${useThisHeight}px`);
@@ -1317,39 +1374,39 @@ const $freeze = (element, operation, attr = true) => {
             if (position === "center") postStyle = "osai-notifier__display-center";
             if ($sel(sideCardSelector)) previousEntryHeight = getNextEntryTop();
             switch (theme) {
-              case "success":
-              case "good":
-                styleClass = "success";
-                break;
+                case "success":
+                case "good":
+                    styleClass = "success";
+                    break;
 
-              case "fail":
-              case "danger":
-              case "error":
-                styleClass = "fail";
-                break;
+                case "fail":
+                case "danger":
+                case "error":
+                    styleClass = "fail";
+                    break;
 
-              case "info":
-                styleClass = "info";
-                break;
+                case "info":
+                    styleClass = "info";
+                    break;
 
-              case "warn":
-              case "warning":
-                styleClass = "warn";
-                break;
+                case "warn":
+                case "warning":
+                    styleClass = "warn";
+                    break;
             }
-            $html($sel(presenceSelector), "beforeend", `<div class="osai-notifier osai-notifier-entry ${postStyle} ${styleClass}" ${uniqueId}><div class="osai-notifier__body">${dialog}</div><div class="osai-notifier__close"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor"></rect><rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor"></rect></svg></div></div>`);
+            $html($sel(presenceSelector), "beforeend", `<div class="osai-notifier osai-notifier-entry ${postStyle} ${styleClass}" ${uniqueId}><div class="osai-notifier__body"><div class="osai-notifier__dialog">${dialog}</div><div style="${!showCopy ? "display:none" : ""}"><button class="osai-notifier__copy"><i class="gg-copy"></i> Copy Text</button></div></div><div class="osai-notifier__close"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor"></rect><rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor"></rect></svg></div></div>`);
             let notifyEntry = $sela(".osai-notifier-entry");
             let currentEntry = $end(notifyEntry);
+            placeNewEntry(currentEntry, previousEntryHeight);
             setTimeout((() => {
                 $class(currentEntry, "add", "osai-notifier__display");
-                placeNewEntry(currentEntry, previousEntryHeight);
             }), 200);
             return currentEntry;
         };
         const CONFIG = $sel(".osai-notifier__config_wrapper");
         notifier = {
             notify: (dialog, theme, option) => NOTIFY(dialog, theme, option),
-            notifyConfig: ({duration: duration, type: type, position: position, message: message, margin: margin}) => {
+            notifyConfig: ({duration: duration, type: type, position: position, message: message, margin: margin, showCopy: showCopy}) => {
                 let addConfig = (config, value) => {
                     if (!value) return;
                     let element = config => $sel("input[data-config='" + config + "'].osai-notifier__config_wrapper");
@@ -1360,6 +1417,7 @@ const $freeze = (element, operation, attr = true) => {
                 addConfig("position", position);
                 addConfig("margin", margin);
                 addConfig("message", message?.replaceAll('"', "'"));
+                addConfig("showCopy", showCopy);
             }
         };
     }
