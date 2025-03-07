@@ -645,7 +645,7 @@ const $cookie = (name = "*", value = null, expire = null, path = "/", domain = "
     let alreadyChecked;
     for (let i = 0; i < form.elements.length; i++) {
         let field = form.elements[i];
-        if (field.name && field.type === "file" && field.disabled === false) hasFile = true;
+        if (field.name && field.type === "file" && field.disabled === false && field.files.length > 0) hasFile = true;
         if (!field.name || field.disabled || field.type === "file" || field.type === "reset" || field.type === "submit" || field.type === "button") continue;
         if (field.type === "select-multiple") $loop(field.options, (v => {
             if (v.selected) addField(field.name, v.value);
@@ -762,9 +762,13 @@ const $copyToClipboard = (str, successMsg = "Copied to clipboard") => {
         return true;
     }
     try {
-        if ($id("LAY-ENVIRONMENT") !== "DEV") return true;
+        if ($id("LAY-ENVIRONMENT").content !== "DEV") {
+            console.warn(`You tried to use a deprecated way to copy a string in a non dev environment. String: \n ${str}`);
+            return true;
+        }
     } catch (e) {
         console.warn("Using a function that depends on core Lay features outside Lay framework");
+        console.warn(`You tried to use a deprecated way to copy a string in a non dev environment. String: \n ${str}`);
         return true;
     }
     const el = document.createElement("textarea");
@@ -800,9 +804,9 @@ const $preloader = (act = "show") => {
  * @version 2.1.0
  * @since 05/01/2021
  * @modified 08/01/2025
- * @param [string|Object] url = url of request being sent or an object containing the url and options of the request
+ * @param {string|Object} url = url of request being sent or an object containing the url and options of the request
  * url should be passed using "action" as the key
- * @param [object] option
+ * @param {object|function|string} option
  * - `option.credential` {boolean} = send request with credentials when working with CORS
  *  - `option.content` {string} = XMLHTTPRequest [default = text/plain] only necessary when user wants to set custom dataType aside json,xml and native formData
  *  - `option.method` {string} = method of request [default = GET]
@@ -816,7 +820,7 @@ const $preloader = (act = "show") => {
  *  - `option.error` {function} = it executes for all kinds of error, it's like the finally of errors
  *  - `option.loaded` {function} = optional callback function that should be executed when the request is successful, either this or a promise
  *  - `option.abort` {function} = function to execute on upload abort
- * @param data {any} same as `option.data`, only comes in play when three parameter wants to be used
+ * @param {boolean|object|string} data same as `option.data`, only comes in play when three parameter wants to be used
  * @return {Promise}
  */ const $curl = (url, option = {}, data = null) => new Promise(((resolve, reject) => {
     if ($type(url) === "Object") {
@@ -831,7 +835,7 @@ const $preloader = (act = "show") => {
         type: option
     };
     if ($type(data) === "Boolean") {
-        option.strict = data;
+        option.displayError = data;
         data = null;
     }
     let xhr = false, response;
@@ -921,7 +925,6 @@ const $preloader = (act = "show") => {
 
                     default:
                         const isOk = status > 199 && status < 300;
-                        const isCLientError = status > 399 && status < 500;
                         const isServerError = status > 499;
                         response = method === "HEAD" ? xhr : xhr.responseText ?? xhr.response;
                         if (method !== "HEAD") {
@@ -935,7 +938,6 @@ const $preloader = (act = "show") => {
                                     if (!isOk) {
                                         xhr["e"] = e;
                                         if (isServerError) msg = "Server error, please contact support if problem persists";
-                                        if (isCLientError) msg = "The server sent a response that could not be parsed";
                                     }
                                     return errRoutine(msg, xhr, response);
                                 }
@@ -1267,7 +1269,7 @@ const $freeze = (element, operation, attr = true) => {
     }
     if (boxToDraw === "all" || boxToDraw === "notifier" || boxToDraw === "notify") {
         if (!$in($sel(".osai-simple-notifier"))) $html($sel("body"), "beforeend", `<div class="osai-simple-notifier"><div style="display: none" class="osai-notifier__config_wrapper"></div></div>`);
-        if (!$in($sel(".osai-notifier__stylesheet"))) $html($sel("head"), "beforeend", `<style class="osai-notifier__stylesheet" rel="stylesheet" media="all">\n\t\t\t.osai-notifier{\n\t\t\t    line-height: normal;\n\t\t\t\tscroll-behavior: smooth;\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 10px;\n\t\t\t\tright: 10px;\n\t\t\t\tborder-radius: 0 10px 10px 0;\n\t\t\t\tpadding: 10px;\n\t\t\t\tfont-weight: 500;\n\t\t\t\tcolor: #000000;\n\t\t\t\tbackground-color: var(--text);\n\t\t\t\tborder-left: solid .5rem var(--bg);\n\t\t\t\tbox-shadow: 0 1px 2px rgba(0, 0, 0, .3);\n\t\t\t\tdisplay: flex;\n\t\t\t\topacity: 0;\n\t\t\t\ttransform: translate(50%, 0);\n\t\t\t\tz-index: 9993;\n\t\t\t\tmin-height: 50px;\n\t\t\t\tmin-width: 150px;\n\t\t\t\tjustify-content: center;\n\t\t\t\talign-items: center;\n                transition: ease-in-out all .5s;\n\t\t\t}\n\t\t\t.osai-notifier__dialog{\n\t\t\tpadding-left:10px;\n\t\t\t}\n\t\t\t.osai-notifier__copy{\n                border-radius: 5px;\n                padding: 8px 15px;\n                font-size: .9rem;\n                background: rgba(229,234,246,0.5);\n                transform: scale(.9);\n                margin-top: 10px;\n\t\t\t}\n\t\t\t.osai-notifier__copy:hover{\n\t\t\t    background: rgba(229,234,246,1);\n\t\t\t}\n\t\t\t.osai-notifier__display{\n\t\t\t\topacity: 1;\n\t\t\t\ttransform: translate(0,0);\n\t\t\t\tmax-width: 50vw;\n\t\t\t}\n\t\t\t.osai-notifier__display-center{\n\t\t\t\ttop: 50%; \n\t\t\t\tleft: 50%;\n                right: auto;\n\t\t\t\ttransform: translate(-50%,-50%);\n\t\t\t} @media (max-width: 767px){\n                .osai-notifier__display-center{\n                    max-width: 60vw;\n                }\n            }\n            @media (max-width: 426px){\n            \t.osai-notifier__display-center{\n                    max-width: 93vw;\n                }\n                .osai-notifier__display{\n\t\t\t\t\tmax-width: 93vw;\n\t\t\t\t}\n            }\n\t\t\t.osai-notifier__close{\n\t\t\t\tposition: absolute;\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t\tcursor: pointer;\n\t\t\t\topacity: .8;\n\t\t\t}\n\t\t\t.osai-notifier__close:hover{\n\t\t\t\topacity: 1;\n\t\t\t\tcolor: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.success{\n\t\t\t\tborder-color: var(--success);\n\t\t\t}\n\t\t\t.osai-notifier.fail{\n\t\t\t\tborder-color: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.warn{\n\t\t\t\tborder-color: var(--warn);\n\t\t\t}\n\t\t\t.osai-notifier.info{\n\t\t\t\tborder-color: var(--info);\n\t\t\t}\n\t\t\t.osai-notifier__body{\n\t\t\t\tpadding: 5px 26px 5px 36px;\n\t\t\t\tpadding-left: 0;\n\t\t\t\twidth: 100%;\n\t\t\t}\n\t\t</style>`);
+        if (!$in($sel(".osai-notifier__stylesheet"))) $html($sel("head"), "beforeend", `<style class="osai-notifier__stylesheet" rel="stylesheet" media="all">\n\t\t\t.osai-notifier{\n\t\t\t    line-height: normal;\n\t\t\t\tscroll-behavior: smooth;\n\t\t\t\tposition: fixed;\n\t\t\t\ttop: 10px;\n\t\t\t\tright: 10px;\n\t\t\t\tborder-radius: 0 10px 10px 0;\n\t\t\t\tpadding: 10px;\n\t\t\t\tfont-weight: 500;\n\t\t\t\tcolor: #000000;\n\t\t\t\tbackground-color: var(--text);\n\t\t\t\tborder-left: solid .5rem var(--bg);\n\t\t\t\tbox-shadow: 0 1px 2px rgba(0, 0, 0, .3);\n\t\t\t\tdisplay: flex;\n\t\t\t\topacity: 0;\n\t\t\t\ttransform: translate(50%, 0);\n\t\t\t\tz-index: 9993;\n\t\t\t\tmin-height: 50px;\n\t\t\t\tmin-width: 150px;\n\t\t\t\tjustify-content: center;\n\t\t\t\talign-items: center;\n                transition: ease-in-out all .5s;\n\t\t\t}\n\t\t\t.osai-notifier__dialog{\n\t\t\tpadding-left:10px;\n\t\t\t}\n\t\t\t.osai-notifier__copy{\n                border-radius: 5px;\n                padding: 8px 15px;\n                font-size: .8rem;\n                background: rgba(229,234,246,0.5);\n                transform: scale(.9);\n                margin-top: 10px;\n                display: flex;\n                gap: 10px;\n                justify-content: center;\n                align-items: center;\n                transition: all 0.55s ease-in-out;\n\t\t\t}\n\t\t\t.osai-notifier__copy:hover{\n\t\t\t    background: rgba(229,234,246,1);\n\t\t\t}\n\t\t\t.osai-notifier__display{\n\t\t\t\topacity: 1;\n\t\t\t\ttransform: translate(0,0);\n\t\t\t\tmax-width: 50vw;\n\t\t\t}\n\t\t\t.osai-notifier__display-center{\n\t\t\t\ttop: 50%; \n\t\t\t\tleft: 50%;\n                right: auto;\n\t\t\t\ttransform: translate(-50%,-50%);\n\t\t\t} @media (max-width: 767px){\n                .osai-notifier__display-center{\n                    max-width: 60vw;\n                }\n            }\n            @media (max-width: 426px){\n            \t.osai-notifier__display-center{\n                    max-width: 93vw;\n                }\n                .osai-notifier__display{\n\t\t\t\t\tmax-width: 93vw;\n\t\t\t\t}\n            }\n\t\t\t.osai-notifier__close{\n\t\t\t\tposition: absolute;\n\t\t\t\tright: 10px;\n\t\t\t\ttop: 10px;\n\t\t\t\tcursor: pointer;\n\t\t\t\topacity: .8;\n\t\t\t}\n\t\t\t.osai-notifier__close:hover{\n\t\t\t\topacity: 1;\n\t\t\t\tcolor: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.success{\n\t\t\t\tborder-color: var(--success);\n\t\t\t}\n\t\t\t.osai-notifier.fail{\n\t\t\t\tborder-color: var(--fail);\n\t\t\t}\n\t\t\t.osai-notifier.warn{\n\t\t\t\tborder-color: var(--warn);\n\t\t\t}\n\t\t\t.osai-notifier.info{\n\t\t\t\tborder-color: var(--info);\n\t\t\t}\n\t\t\t.osai-notifier__body{\n\t\t\t\tpadding: 5px 26px 5px 36px;\n\t\t\t\tpadding-left: 0;\n\t\t\t\twidth: 100%;\n\t\t\t}\n\t\t</style>`);
         let presenceSelector = ".osai-simple-notifier";
         let sideCardSelector = ".osai-notifier-entry:not(.osai-notifier__display-center)";
         const NOTIFY = (dialog, theme, options) => {

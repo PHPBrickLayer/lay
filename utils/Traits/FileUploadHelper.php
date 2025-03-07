@@ -3,51 +3,18 @@ declare(strict_types=1);
 
 namespace Utils\Traits;
 
-use BrickLayer\Lay\Core\Api\Enums\ApiStatus;
 use BrickLayer\Lay\Core\LayConfig;
 use BrickLayer\Lay\Libs\Aws\Bucket;
 use BrickLayer\Lay\Libs\FileUpload\Enums\FileUploadExtension;
 use BrickLayer\Lay\Libs\FileUpload\Enums\FileUploadStorage;
 use BrickLayer\Lay\Libs\FileUpload\Enums\FileUploadType;
 use BrickLayer\Lay\Libs\FileUpload\FileUpload;
-use BrickLayer\Lay\Libs\Image\ImageLib;
-use BrickLayer\Lay\Libs\LayDate;
-use BrickLayer\Lay\Libs\LayObject;
 use BrickLayer\Lay\Libs\String\Enum\EscapeType;
 use BrickLayer\Lay\Libs\String\Escape;
 use JetBrains\PhpStorm\ArrayShape;
 
-trait Helper
+trait FileUploadHelper
 {
-
-    public static function resolve(int|ApiStatus $code = 409, ?string $message = null, ?array $data = null): array
-    {
-        $code = is_int($code) ? $code : $code->value;
-
-        return [
-            "code" => $code,
-            "msg" => $message ?? "Request could not be processed at the moment, please try again later",
-            "data" => $data
-        ];
-    }
-
-    protected static function date(?string $datetime = null): string
-    {
-        return LayDate::date($datetime);
-    }
-
-    protected static function required_post_missing(object $post_object, array $post_names): ?string
-    {
-        foreach ($post_names as $p) {
-            if (empty(@$post_object->{$p})) {
-                $p = "<b>" . ucwords(str_replace("_", " ", $p)) . "</b>";
-                return "$p cannot be empty. $p is required!";
-            }
-        }
-
-        return null;
-    }
-
     private static function upload_dir(bool $with_root = false): string
     {
         $lay = LayConfig::server_data();
@@ -57,28 +24,6 @@ trait Helper
             return $lay->uploads;
 
         return $dir;
-    }
-
-    protected static function cleanse(mixed &$value, EscapeType $type = EscapeType::STRIP_TRIM_ESCAPE, bool $strict = true)
-    {
-        $value = $value ? Escape::clean($value, $type, ['strict' => $strict]) : "";
-        return $value;
-    }
-
-    private function validate_captcha(): bool
-    {
-        if (!isset($_SESSION['CAPTCHA_CODE']))
-            return false;
-
-        if (self::get_json(false)->captcha == $_SESSION['CAPTCHA_CODE'])
-            return true;
-
-        return false;
-    }
-
-    protected static function get_json(bool $throw_error = true): bool|null|object
-    {
-        return LayObject::new()->get_json($throw_error);
     }
 
     #[ArrayShape([
@@ -112,7 +57,7 @@ trait Helper
 
         $file = (new FileUpload([
             "post_name" => $post_name,
-            "new_name" => self::cleanse($new_name, EscapeType::P_URL),
+            "new_name" => Escape::clean($new_name, EscapeType::P_URL),
             "directory" => $root . $dir,
             "permission" => 0755,
             "file_limit" => $file_limit,

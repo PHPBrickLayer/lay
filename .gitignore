@@ -1,7 +1,7 @@
 /vendor/
 /web/uploads/
 /.lay/temp/
-/.lay/worker/
+/.lay/workers/
 /.lay/identity
 *.lock
 *.sqlite
