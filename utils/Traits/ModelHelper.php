@@ -29,10 +29,11 @@ trait ModelHelper {
         return SQL::new();
     }
 
-    protected static function exists(string $where) : int
+    protected static function eq(string $column, string $value) : int
     {
         return self::orm(self::$table)
-            ->where(self::attach_delete_column() . "($where)")
+            ->where(self::attach_delete_column())
+            ->and_where($column, $value)
             ->count_row("id");
     }
 

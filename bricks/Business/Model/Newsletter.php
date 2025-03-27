@@ -13,6 +13,6 @@ class Newsletter {
 
     public function is_exist(string $email): bool
     {
-        return self::exists("`email`='$email'") > 0;
+        return self::eq("email", $email) > 0;
     }
 }
