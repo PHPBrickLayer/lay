@@ -6,17 +6,32 @@ include_once __DIR__ . DIRECTORY_SEPARATOR . "vendor" .  DIRECTORY_SEPARATOR . "
 
 LayConfig::validate_lay();
 
-LayConfig::session_start([
+$sess = [
     "http_only" => true,
-    "only_cookies" => true,
+//    "only_cookies" => true,
     "secure" => true,
     "samesite" => 'None',
-]);
+];
+
+if(LayConfig::$ENV_IS_PROD) {
+    $sess['lifetime'] = 0;
+    $sess['path'] = "/";
+    $sess['domain'] = "localhost";
+}
+
+LayConfig::session_start($sess);
 
 LayConfig::set_cors(
-    [],
-    false,
-    function (){
+    // Specify where to allow requests from
+    allowed_origins: [
+        "http://localhost",
+    ],
+
+    // Allow requests from all origins
+    allow_all: true,
+
+    // Headers to add to the response
+    fun: function () {
         header("Access-Control-Allow-Credentials: true");
         header("Access-Control-Allow-Headers: *");
         header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -41,6 +56,9 @@ LayConfig::new()
     ->init_tel("TEL-1", "TEL-2")
     ->init_author("PHP BrickLayer - Lay")
     ->init_copyright("&copy; " . date('Y') . "; All rights reserved <a href='https://lay.osaitech.dev'>PHP Bricklayer - Lay</a>")
+
+    // Store non-sensitive data ands access it anywhere in the project by calling the `LayConfig::site_data()->others` method.
+    // If you have a value that persists both on local environment and production, use this
     ->init_others([
         "desc" => (
             "This is an awesome project that is about to unfold you just watch and see 😉."
