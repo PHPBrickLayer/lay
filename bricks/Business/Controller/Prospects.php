@@ -3,24 +3,20 @@
 namespace Bricks\Business\Controller;
 
 use BrickLayer\Lay\Core\LayConfig;
-use BrickLayer\Lay\Core\Traits\ControllerHelper;
-use BrickLayer\Lay\Core\Traits\IsSingleton;
-use BrickLayer\Lay\Core\Traits\ValidateCleanMap;
+use BrickLayer\Lay\Libs\Primitives\Traits\ControllerHelper;
+use BrickLayer\Lay\Libs\Primitives\Traits\IsSingleton;
 use BrickLayer\Lay\Libs\LayDate;
-use BrickLayer\Lay\Libs\String\Enum\EscapeType;
 use Bricks\Business\Model\Prospect;
+use Bricks\Business\Request\SaveProspectRequest;
+use Bricks\Business\Resource\ProspectResource;
 use Utils\Email\Email;
 
 class Prospects
 {
-    use IsSingleton, ControllerHelper, ValidateCleanMap;
+    use IsSingleton, ControllerHelper;
 
-    private static function model(): Prospect
+    public function contact_us() : array
     {
-        return Prospect::new();
-    }
-
-    public function contact_us() : array {
         $post = self::request();
 
         if(
@@ -39,52 +35,42 @@ class Prospects
 
     public function add(): array
     {
-        self::vcm_start(self::request())
-            ->vcm_rules([ 'required' => true ])
-            ->vcm([ 'is_captcha' => true, 'field' => 'captcha' ])
-            ->vcm([ 'field' => 'name' ])
-            ->vcm([ 'field' => 'email', 'is_email' => true ])
-            ->vcm([ 'field' => 'tel', 'is_num' => true, 'required' => false ])
-            ->vcm([ 'field' => 'subject' ])
-            ->vcm([ 'field' => 'message', 'clean' => [
-                'strict' => false,
-                'escape' => EscapeType::STRIP_TRIM_ESCAPE
-            ]]);
-        $post = self::vcm_end();
+        $request = new SaveProspectRequest();
 
-        if ($errors = self::vcm_errors(true))
-            return self::res_warning($errors);
-
-        $date = LayDate::date();
-
-        $message = nl2br($post['message']);
+        if($request->error)
+            return self::res_warning($request->error);
 
         $body = [
-            "subject" => $post['subject'],
-            "body" => $message,
-            "date" => $date,
+            "subject" => $request->subject,
+            "body" => $request->message,
+            "date" => LayDate::now(),
         ];
 
-        if ($data = self::model()->is_exist($post['name'], $post['email'])) {
+        $prospect = new Prospect();
 
-            $data['body'] = @$data['body'] ? json_decode($data['body'], true) : [];
-            $data['body'][] = $body;
+        if ($prospect->is_duplicate($request)) {
+            $data = $prospect->body ?? [];
+            $data[] = $body;
 
-            return $this->edit($data['id'], $data['body']);
+            $edited = $prospect->edit_self([ "body" => json_encode($data) ]);
+
+            if($edited)
+                return self::res_success("Your request has been placed successfully. This is not your first rodeo. We will surely get back to you within 2 business working days. Thank you and best regards.");
+
+            return self::res_warning("Could not complete process at the moment, please try again later");
         }
 
-        $data = $post;
-        $data['body'] = json_encode($body);
-        $data['created_by'] = "END_USER";
-        $data['created_at'] = $date;
+        $request->update('body', json_encode($body));
 
-        if (!self::model()->add($data))
-            return self::res_error();
+        $prospect->add($request);
+
+        if ($prospect->is_empty())
+            return self::res_warning("Could not complete process at the moment, please try again later");
 
         (new Email())
-            ->subject("Get Started: " . $post['subject'])
-            ->body($post['message'])
-            ->client($post['email'], $post['name'])
+            ->subject("Get Started: " . $request->subject)
+            ->body($request->message)
+            ->client($request->email, $request->name)
             ->server(
                 LayConfig::site_data()->mail->{0},
                 "Hello @ Osai Tech"
@@ -94,29 +80,10 @@ class Prospects
         return self::res_success("Your request has been placed successfully. We will surely get back to you within 2 business working days. Thank you and best regards.");
     }
 
-    private function edit(string $id, array $body): array
+    public function list(int $page = 1): array
     {
-
-        self::cleanse($id);
-        $body = json_encode($body);
-
-        self::cleanse($body);
-
-        if (
-            self::model()->edit(
-                $id,
-                [
-                    "body" => $body,
-                ]
-            )
-        )
-            return self::res_success("Your request has been placed successfully. This is not your first rodeo. We will surely get back to you within 2 business working days. Thank you and best regards.");
-
-        return self::res_error();
-    }
-
-    public function list(): array
-    {
-        return self::model()->list_100();
+        return ProspectResource::collect(
+            (new Prospect())->all($page, 100)
+        );
     }
 }
