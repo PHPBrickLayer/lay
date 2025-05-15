@@ -4,7 +4,7 @@
   "keywords": ["bricklayer", "lay", "php bricklayer", "lite php framework", "metaframework", "fast php framework"],
   "type": "library",
   "license": "GPL-3.0",
-  "version": "1.0.0",
+  "version": "0.6.4",
 
   "autoload": {
     "psr-4": {
