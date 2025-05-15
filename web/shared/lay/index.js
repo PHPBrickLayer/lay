@@ -388,76 +388,86 @@ const $img2blob = img => {
     return canvas.toDataURL("image/png");
 };
 
-const $media = ({srcElement: srcElement, previewElement: previewElement, then: then = null, on: on = "change", useReader: useReader = true}) => {
-    const currentMediaSrc = previewElement.src;
-    let previewMedia = srcElement => {
-        let srcProcessed = [];
-        switch (srcElement.type) {
-            default:
-                previewElement.src = srcElement.value !== "" ? srcElement.value : currentMediaSrc;
-                break;
-
-            case "file":
-                if (useReader) {
-                    const reader = new FileReader;
-                    $on(reader, "load", (() => {
-                        if (srcElement.value === "") return previewElement.src = currentMediaSrc;
-                        previewElement.src = reader.result;
-                        then && then(reader.result);
-                    }), "on");
-                    if (srcElement.files[0]) return reader.readAsDataURL(srcElement.files[0]);
-                    previewElement.src = currentMediaSrc;
-                }
-                if (srcElement.multiple) return osNote("Media preview doesn't support preview for multiple files");
-                if (srcElement.value === "") return previewElement.src = currentMediaSrc;
-                srcProcessed = URL.createObjectURL(srcElement.files[0]);
-                previewElement.src = srcProcessed;
-                then && then(srcProcessed);
-                break;
-        }
-    };
-    if (!on) return previewMedia(srcElement);
-    if ($type(srcElement) !== "Array") return $on(srcElement, on, (() => previewMedia(srcElement)), "on");
-    $loop(srcElement, (src => $on(src, on, (() => previewMedia(src)), "on")));
-};
-
 const $exceeds = (element, size) => {
     if (element.type !== "file") return;
     if (element.files.length === 0) return false;
     return element.files[0].size > size;
 };
 
-const $mediaPreview = (elementToWatch, placeToPreview, other = {}) => {
-    let placeholder = other.default ?? null;
-    let type = other.type ?? 0;
-    let event_wrap = other.event ?? true;
-    let operation = other.operation ?? (() => "operation");
-    let previewPlaceholder = placeholder ?? placeToPreview.src;
-    let previewMedia = () => {
-        let srcProcessed = [];
-        if (type === 1) {
-            let reader = new FileReader;
-            $on(reader, "load", (() => {
-                if (elementToWatch.value !== "") {
-                    placeToPreview.src = reader.result;
-                    if (operation !== "operation") operation(reader.result);
-                } else placeToPreview.src = previewPlaceholder;
-            }), "on");
-            reader.readAsDataURL(elementToWatch.files[0]);
-        } else if (type === 2) placeToPreview.src = elementToWatch.value !== "" ? elementToWatch.value : previewPlaceholder; else {
-            if (placeToPreview !== "multiple") {
-                if (elementToWatch.value !== "") {
-                    srcProcessed = URL.createObjectURL(elementToWatch.files[0]);
-                    placeToPreview.src = srcProcessed;
-                } else placeToPreview.src = previewPlaceholder;
-            } else {
-                if (elementToWatch.value !== "") Array.from(elementToWatch.files).forEach((file => srcProcessed.push(URL.createObjectURL(file))));
-            }
-            if (operation !== "operation") operation(srcProcessed);
+const $media = ({srcElement: srcElement, previewElement: previewElement, then: then = null, on: on = "change", useReader: useReader = true}) => {
+    const currentMediaSrc = previewElement.src;
+    if (!$id("lay-media-previewer-loader")) $sel("head").$html("beforeend", `<style id="lay-media-previewer-loader">.lay-media-previewer-loader{font-size: 1rem; position: absolute; left: 0; right: 0; top: 5px; bottom: 5px; background: rgba(0,0,0,.5); margin: auto; width: 150px; display: flex;justify-content: center;align-items: center;font-weight: bold;color: #fff;letter-spacing: .3rem; border-radius: 15px; animation: pulse 2s infinite linear; transition: .6s ease-in-out</style>`);
+    let defaultInputFile = null;
+    let checkedHEIC = false;
+    let prepHEICForPreview = async file => {
+        const convert = async () => {
+            defaultInputFile = await heic2any({
+                blob: file,
+                toType: "image/jpeg",
+                quality: .8
+            });
+            checkedHEIC = true;
+            previewMedia();
+        };
+        if (!$id("lay-heic-converter")) {
+            const script = $doc.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js";
+            script.id = "lay-heic-converter";
+            script.onerror = () => console.log("An error occured while trying to add heic2any previewer");
+            script.onload = () => convert();
+            $doc.head.appendChild(script);
+        } else convert();
+    };
+    let previewMedia = _srcElement => {
+        _srcElement = _srcElement ?? srcElement;
+        if (_srcElement?.multiple) return osNote("Media preview doesn't support preview for multiple files");
+        const inputFile = defaultInputFile ?? _srcElement.files[0];
+        const wrapper = previewElement.parentElement;
+        if (!wrapper.$sel(".lay-media-previewer-loader")) {
+            wrapper.style.position = "relative";
+            wrapper.$html("afterbegin", `<div class="lay-media-previewer-loader">Loading...</div>`);
+        } else wrapper.$sel(".lay-media-previewer-loader").style.display = "flex";
+        if (inputFile?.type === "image/heic" && !checkedHEIC) {
+            return prepHEICForPreview(inputFile);
+        }
+        switch (_srcElement.type) {
+            default:
+                wrapper.$sel(".lay-media-previewer-loader").style.display = "none";
+                previewElement.src = _srcElement.value !== "" ? _srcElement.value : currentMediaSrc;
+                break;
+
+            case "file":
+                if (useReader) {
+                    const reader = new FileReader;
+                    $on(reader, "load", (() => {
+                        wrapper.$sel(".lay-media-previewer-loader").style.display = "none";
+                        if (_srcElement.value === "") return previewElement.src = currentMediaSrc;
+                        previewElement.src = reader.result;
+                        then && then(inputFile, reader.result);
+                    }), "on");
+                    if (inputFile) return reader.readAsDataURL(inputFile);
+                    previewElement.src = currentMediaSrc;
+                }
+                wrapper.$sel(".lay-media-previewer-loader").style.display = "none";
+                if (_srcElement.value === "") return previewElement.src = currentMediaSrc;
+                const srcProcessed = URL.createObjectURL(inputFile);
+                previewElement.src = srcProcessed;
+                then && then(inputFile, srcProcessed);
+                break;
         }
     };
-    if (event_wrap === true) $on(elementToWatch, "change", previewMedia, "on"); else if ($type(event_wrap) === "String") $on(elementToWatch, event_wrap, previewMedia, "on"); else previewMedia();
+    if (!on || on === "") return previewMedia(srcElement);
+    if ($type(srcElement) === "Array") return $loop(srcElement, (src => $on(src, on, (() => previewMedia(src)), "on")));
+    return $on(srcElement, on, (() => previewMedia(srcElement)), "on");
 };
+
+const $mediaPreview = (elementToWatch, placeToPreview, other = {}) => $media({
+    srcElement: elementToWatch,
+    previewElement: placeToPreview,
+    useReader: other.type === 1,
+    then: other.operation,
+    on: other.event ?? "change"
+});
 
 const $showPassword = (callbackFn = (fieldType => fieldType), throwError = true) => {
     $sela($id("toggle-password") ? "#toggle-password" : ".osai-show-password").$loop((ele => {
@@ -818,6 +828,7 @@ const $preloader = (act = "show") => {
  *  - `option.preload` {function} = function to carryout before response is received
  *  - `option.progress` {function} = function to execute, while upload is in progress [one arg (response)]
  *  - `option.error` {function} = it executes for all kinds of error, it's like the finally of errors
+ *  - `option.addError` {function} = This function is executed on top of the default error handler of this method
  *  - `option.loaded` {function} = optional callback function that should be executed when the request is successful, either this or a promise
  *  - `option.abort` {function} = function to execute on upload abort
  * @param {boolean|object|string} data same as `option.data`, only comes in play when three parameter wants to be used
@@ -851,11 +862,12 @@ const $preloader = (act = "show") => {
     let method = option.method ?? "get";
     let type = option.type ?? "text";
     let returnType = option.return ?? option.type ?? null;
-    let alert_error = option.alert ?? false;
+    let alertError = option.alert ?? false;
     let displayError = option.displayError ?? true;
     let preload = option.preload ?? (() => "preload");
     let progress = option.progress ?? (() => "progress");
     let error = option.error ?? (() => "error");
+    let addError = option.addError ?? (() => "error");
     let debounce = option.debounce ?? 0;
     debounce = !debounce ? 0 : debounce;
     data = option.data ?? option.form ?? data ?? null;
@@ -887,10 +899,11 @@ const $preloader = (act = "show") => {
             } catch (e) {
                 alertType = "fail";
             }
-            if (alert_error) alert(msg); else osNote(msg, alertType, {
+            if (alertError) alert(msg); else osNote(msg, alertType, {
                 duration: -1,
                 showCopy: true
             });
+            if (addError !== "error") addError();
         }
         reject({
             statusText: xhr.e ?? xhr.statusText,
