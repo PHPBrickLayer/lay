@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+const USING_BOB = true;
 
 if(!defined("SAFE_TO_INIT_LAY"))
     define("SAFE_TO_INIT_LAY", true);
