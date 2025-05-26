@@ -19,6 +19,8 @@ class Prospects
     {
         $post = self::request();
 
+        //TODO: Include some sort of captcha to avoid spam messages from bots
+
         if(
             (new Email())
                 ->client($post->email, $post->name)
@@ -60,7 +62,11 @@ class Prospects
             return self::res_warning("Could not complete process at the moment, please try again later");
         }
 
-        $request->update('body', json_encode($body));
+        $request->new_key('body', json_encode($body));
+        $message = $request->message;
+        $subject = $request->subject;
+
+        $request->unset("subject", "message");
 
         $prospect->add($request);
 
@@ -68,12 +74,12 @@ class Prospects
             return self::res_warning("Could not complete process at the moment, please try again later");
 
         (new Email())
-            ->subject("Get Started: " . $request->subject)
-            ->body($request->message)
+            ->subject("Get Started: " . $subject)
+            ->body($message)
             ->client($request->email, $request->name)
             ->server(
                 LayConfig::site_data()->mail->{0},
-                "Hello @ Osai Tech"
+                "Rhythms Mailer"
             )
             ->to_server();
 
