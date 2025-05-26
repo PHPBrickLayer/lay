@@ -21,12 +21,9 @@ class NewsletterSub extends BaseModelHelper {
 
     public static string $table = "newsletter_subs";
 
-    protected function props_schema(array $props): array
+    protected function props_schema(array &$props): void
     {
-        $props['options'] = is_string(@$props['options']) ?
-            json_decode($props['options'], true) : ($props['options'] ?? null);
-
-        return $props;
+        $this->parse_prop("options", "array");
     }
 
     public function is_duplicate(array|RequestHelper $columns) : bool
@@ -38,5 +35,10 @@ class NewsletterSub extends BaseModelHelper {
                 ->where("email", $columns['email'])
                 ->and_where("deleted", '0')
                 ->count() > 0;
+    }
+
+    public function created_by() : ?string
+    {
+        return "END-USER";
     }
 }
