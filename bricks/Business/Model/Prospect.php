@@ -30,7 +30,7 @@ class Prospect extends BaseModelHelper
         $this->fill(
             self::db()
                 ->where("name", $columns['name'])
-                ->where("email", $columns['email'])
+                ->and_where("email", $columns['email'])
                 ->and_where("deleted", '0')
             ->then_select()
         );
@@ -38,11 +38,13 @@ class Prospect extends BaseModelHelper
         return $this->exists();
     }
 
-    protected function props_schema(array $props): array
+    protected function props_schema(array &$props): void
     {
-        $props['body'] = is_string(@$props['body']) ?
-            json_decode($props['body'], true) : ($props['body'] ?? null);
+        $this->parse_prop("body", "array");
+    }
 
-        return $props;
+    public function created_by() : ?string
+    {
+        return "END-USER";
     }
 }
