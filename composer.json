@@ -3,7 +3,7 @@
   "description": "A lite PHP builder meta-framework to get your projects up and running quickly",
   "keywords": ["bricklayer", "lay", "php bricklayer", "lite php framework", "metaframework", "fast php framework"],
   "type": "library",
-  "license": "GPL-3.0",
+  "license": "MIT",
 
   "autoload": {
     "psr-4": {
