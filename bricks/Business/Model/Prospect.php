@@ -7,16 +7,16 @@ use BrickLayer\Lay\Libs\Primitives\Abstracts\BaseModelHelper;
 use BrickLayer\Lay\Libs\Primitives\Abstracts\RequestHelper;
 
 /**
- * @property string $id
- * @property string $name
- * @property string $email
- * @property string|null $tel
- * @property array $body
- * @property bool $deleted
- * @property string|null $created_by
- * @property int $created_at
- * @property string|null $updated_by
- * @property int $updated_at
+ * @property string id
+ * @property string name
+ * @property string email
+ * @property string|null tel
+ * @property array body
+ * @property bool deleted
+ * @property string|null created_by
+ * @property int created_at
+ * @property string|null updated_by
+ * @property int updated_at
  */
 class Prospect extends BaseModelHelper
 {
@@ -24,8 +24,7 @@ class Prospect extends BaseModelHelper
 
     public function is_duplicate(array|RequestHelper $columns) : bool
     {
-        if($columns instanceof RequestHelper)
-            $columns = $columns->props();
+        $columns = $this->req_2_array($columns);
 
         $this->fill(
             self::db()

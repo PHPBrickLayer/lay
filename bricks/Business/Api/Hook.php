@@ -9,9 +9,9 @@ use Bricks\Business\Controller\Prospects;
 
 class Hook extends ApiHooks
 {
-    public function hooks(): void
+    protected function hooks(): void
     {
-        $this->engine
+        $this
             ->post("subscribe-newsletter")->bind(fn() => NewsletterSubController::new()->add())
             ->get("list-subscribers/{page}")->bind(fn($page) => NewsletterSubController::new()->list((int) $page))
             ->post("contact")->bind(fn() => Prospects::new()->contact_us())
