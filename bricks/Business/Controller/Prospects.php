@@ -79,7 +79,7 @@ class Prospects
             ->client($request->email, $request->name)
             ->server(
                 LayConfig::site_data()->mail->{0},
-                "Rhythms Mailer"
+                "LayMailer"
             )
             ->to_server();
 

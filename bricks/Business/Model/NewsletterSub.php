@@ -6,16 +6,16 @@ use BrickLayer\Lay\Libs\Primitives\Abstracts\BaseModelHelper;
 use BrickLayer\Lay\Libs\Primitives\Abstracts\RequestHelper;
 
 /**
- * @property string $id
- * @property string $email
- * @property string|null $name
- * @property array $options
+ * @property string id
+ * @property string email
+ * @property string name
+ * @property array options
  *
- * @property bool $deleted
- * @property string|null $created_by
- * @property int $created_at
- * @property string|null $updated_by
- * @property int $updated_at
+ * @property bool deleted
+ * @property string created_by
+ * @property int created_at
+ * @property string|null updated_by
+ * @property int|null updated_at
  */
 class NewsletterSub extends BaseModelHelper {
 
@@ -28,13 +28,9 @@ class NewsletterSub extends BaseModelHelper {
 
     public function is_duplicate(array|RequestHelper $columns) : bool
     {
-        if($columns instanceof RequestHelper)
-            $columns = $columns->props();
+        $columns = $this->req_2_array($columns);
 
-        return self::db()
-                ->where("email", $columns['email'])
-                ->and_where("deleted", '0')
-                ->count() > 0;
+        return $this->count("email", $columns['email']) > 0;
     }
 
     public function created_by() : ?string

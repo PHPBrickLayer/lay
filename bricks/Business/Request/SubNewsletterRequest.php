@@ -5,8 +5,8 @@ namespace Bricks\Business\Request;
 use BrickLayer\Lay\Libs\Primitives\Abstracts\RequestHelper;
 
 /**
- * @property string $name
- * @property string $email
+ * @property string name
+ * @property string email
  */
 class SubNewsletterRequest extends RequestHelper
 {
@@ -20,7 +20,6 @@ class SubNewsletterRequest extends RequestHelper
     protected function post_validate(array $data): array
     {
         $data['name'] ??= "Subscriber";
-        $data['created_by'] = "END-USER";
         return $data;
     }
 }
