@@ -45,6 +45,7 @@ class Prospects
         $body = [
             "subject" => $request->subject,
             "body" => $request->message,
+            "tel" => $request->tel,
             "date" => LayDate::now(),
         ];
 
@@ -65,13 +66,20 @@ class Prospects
         $request->new_key('body', json_encode($body));
         $message = $request->message;
         $subject = $request->subject;
+        $tel = $request->tel;
 
-        $request->unset("subject", "message");
+        $request->unset("subject", "message", "tel");
 
         $prospect->add($request);
 
         if ($prospect->is_empty())
             return self::res_warning("Could not complete process at the moment, please try again later");
+
+        $message =  <<<BODY
+        <h3>$subject</h3>
+        <p><b>Phone Number:</b> $tel</p>
+        <p>$message</p>
+        BODY;
 
         (new Email())
             ->subject("Get Started: " . $subject)

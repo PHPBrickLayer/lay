@@ -5,12 +5,12 @@ use BrickLayer\Lay\Core\Api\ApiHooks;
 
 class Plaster extends ApiHooks
 {
-    protected function hooks(): void
+    protected function pre_hook(): void
     {
         $this->set_version("v1");
 
         $this->group_limit(60, "1 minute");
-
-        $this->load_brick_hooks();
     }
+
+    protected function hooks(): void {}
 }
