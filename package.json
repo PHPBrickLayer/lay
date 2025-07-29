@@ -1,5 +1,7 @@
 {
-    "dependencies": {
+    "devDependencies": {
+        "@fullhuman/postcss-purgecss": "7.0.2",
+        "esbuild": "0.25.8",
         "terser": "5.15.1",
         "uglifycss": "0.0.29"
     }
